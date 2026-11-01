@@ -127,6 +127,7 @@ class PosController extends Controller
         return view('sales.index', ['sales' => $sales, 'terminal' => $terminal]);
     }
 
+
     public function syncHistory(Request $request): View
     {
         $request->validate([
@@ -135,22 +136,48 @@ class PosController extends Controller
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
-        $terminals = PosTerminal::query()
-            ->where('business_id', Auth::user()->business_id)
-            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->whereKey(Auth::user()->pos_terminal_id));
-        $machineIds = (clone $terminals)->pluck('machine_id');
+
+        $user = Auth::user();
+
         $syncLogs = DesktopPosSyncLog::query()
-            ->whereIn('machine_id', $machineIds)
-            ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')->toString()))
-            ->when($request->filled('entity_type'), fn (Builder $query) => $query->where('entity_type', $request->string('entity_type')->toString()))
-            ->when($request->filled('from'), fn (Builder $query) => $query->where('received_at', '>=', $request->date('from')->startOfDay()))
-            ->when($request->filled('to'), fn (Builder $query) => $query->where('received_at', '<=', $request->date('to')->endOfDay()))
-            ->latest('received_at')
-            ->paginate(20)
+            ->whereIn('machine_id', function ($query) use ($user) {
+
+                $query->select('machine_id')
+                    ->from('pos_terminals')
+                    ->where('business_id', $user->business_id);
+
+                if (! $user->isAdministrator()) {
+                    $query->where('id', $user->pos_terminal_id);
+                }
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->input('status'));
+            })
+            ->when($request->filled('entity_type'), function ($query) use ($request) {
+                $query->where('entity_type', $request->input('entity_type'));
+            })
+            ->when($request->filled('from'), function ($query) use ($request) {
+                $query->where(
+                    'received_at',
+                    '>=',
+                    $request->date('from')->startOfDay()
+                );
+            })
+            ->when($request->filled('to'), function ($query) use ($request) {
+                $query->where(
+                    'received_at',
+                    '<=',
+                    $request->date('to')->endOfDay()
+                );
+            })
+            ->orderByDesc('received_at')
+            ->orderByDesc('id')
+            ->simplePaginate(20)
             ->withQueryString();
 
         return view('sync.index', compact('syncLogs'));
     }
+
 
     public function showSync(DesktopPosSyncLog $syncLog): View
     {
