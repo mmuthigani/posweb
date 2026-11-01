@@ -72,6 +72,11 @@
                 <div><p class="text-xs font-medium text-slate-400">{{ now()->format('l, F j, Y') }}</p><p class="text-sm font-semibold text-slate-700">{{ auth()->user()->business->name }}</p></div>
             </div>
             <div class="flex items-center gap-3">
+                @php($failedSyncCount = \App\Models\DesktopPosSyncLog::query()->whereIn('machine_id', auth()->user()->business->terminals()->select('machine_id'))->where('status', 'failed')->count())
+                <a href="{{ route('sync.index', ['status' => 'failed']) }}" class="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-[#01553d]" aria-label="{{ $failedSyncCount }} failed sync notifications" title="{{ $failedSyncCount }} failed synchronization(s)">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>
+                    @if($failedSyncCount > 0)<span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>@endif
+                </a>
                 <span class="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold capitalize text-emerald-800 sm:inline-flex">{{ auth()->user()->role }}</span>
                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#144832] text-sm font-bold text-white">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
             </div>

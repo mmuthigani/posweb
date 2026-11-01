@@ -3,9 +3,10 @@
 @section('content')
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div><p class="text-sm font-medium text-[#01553d]">Transactions</p><h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{{ isset($terminal) ? $terminal->terminal_name.' sales' : 'Sales' }}</h1><p class="mt-1 text-sm text-slate-500">Search, filter and review synced transactions.</p></div>
-        <a href="{{ route('sales.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v4h16v-4"/></svg>Export CSV</a>
+        <a href="{{ route('sales.export', (isset($terminal) ? ['terminal_id' => $terminal->id] : []) + request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v4h16v-4"/></svg>Export CSV</a>
     </div>
     <form method="GET" class="mb-5 grid gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5">
+        @if(isset($terminal))<input type="hidden" name="terminal_id" value="{{ $terminal->id }}">@endif
         <input name="q" value="{{ request('q') }}" placeholder="Receipt or cashier" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
         <input name="payment_method" value="{{ request('payment_method') }}" placeholder="Payment method" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
         <label class="sr-only" for="from">From date</label><input id="from" type="date" name="from" value="{{ request('from') }}" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-600 focus:border-[#2b805b] focus:outline-none">

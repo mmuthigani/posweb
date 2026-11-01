@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PosController extends Controller
 {
@@ -67,6 +67,7 @@ class PosController extends Controller
 
     public function products(Request $request): View
     {
+        $request->validate(['q' => ['nullable', 'string', 'max:150']]);
         $products = Product::query()
             ->where('business_id', Auth::user()->business_id)
             ->when($request->filled('q'), function (Builder $query) use ($request): void {
@@ -85,6 +86,7 @@ class PosController extends Controller
 
     public function cashiers(Request $request): View
     {
+        $request->validate(['q' => ['nullable', 'string', 'max:150']]);
         $cashiers = $this->businessSales()
             ->whereNotNull('cashier_name')
             ->when($request->filled('q'), function (Builder $query) use ($request): void {
@@ -116,7 +118,8 @@ class PosController extends Controller
     public function terminalSales(PosTerminal $terminal, Request $request): View
     {
         abort_unless($terminal->business_id === Auth::user()->business_id, 404);
-        $sales = $this->businessSales()->where('terminal_id', $terminal->id)->with('terminal')->latest('sold_at')->paginate(15);
+        $this->validateSalesFilters($request);
+        $sales = $this->filteredSales($request)->where('terminal_id', $terminal->id)->with('terminal')->latest('sold_at')->paginate(15)->withQueryString();
 
         return view('sales.index', ['sales' => $sales, 'terminal' => $terminal]);
     }
@@ -203,6 +206,14 @@ class PosController extends Controller
             'payment_method' => ['nullable', 'string', 'max:50'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'terminal_id' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if ($request->filled('terminal_id')) {
+            $terminal = PosTerminal::query()
+                ->where('business_id', Auth::user()->business_id)
+                ->findOrFail($request->integer('terminal_id'));
+            $request->merge(['terminal_id' => $terminal->id]);
+        }
     }
 }

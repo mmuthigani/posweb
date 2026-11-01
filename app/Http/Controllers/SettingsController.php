@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Business;
 use App\Models\PosTerminal;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;

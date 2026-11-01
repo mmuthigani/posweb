@@ -6,10 +6,10 @@ use App\Models\Business;
 use App\Models\DesktopPosSyncLog;
 use App\Models\PosSale;
 use App\Models\PosTerminal;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Tests\TestCase;
 
 class DesktopPosSyncTest extends TestCase

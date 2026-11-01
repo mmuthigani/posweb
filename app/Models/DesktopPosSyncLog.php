@@ -9,16 +9,25 @@ class DesktopPosSyncLog extends Model
 {
     protected $table = 'desktop_pos_sync_logs';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'client_id',
+        'machine_id',
+        'entity_type',
+        'entity_id',
+        'operation',
+        'payload',
+        'idempotency_key',
+        'status',
+        'error_message',
+        'received_at',
+        'processed_at',
+    ];
 
-    protected function casts(): array
-    {
-        return [
-            'payload' => 'array',
-            'received_at' => 'datetime',
-            'processed_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'payload' => 'array',
+        'received_at' => 'datetime',
+        'processed_at' => 'datetime',
+    ];
 
     public function terminal(): BelongsTo
     {

@@ -6,10 +6,10 @@
         <a href="{{ route('sales.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-[#01553d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0a2a1d]">View all sales <span aria-hidden="true">→</span></a>
     </div>
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        @foreach([['Today’s sales', $todaySales, 'Gross sales recorded today'], ['Transactions', $todayTransactions, 'Completed sales today'], ['Amount received', $todayReceived, 'Payments recorded today'], ['Change given', $todayChange, 'Change returned today']] as [$label, $value, $hint])
+        @foreach([['Today’s sales', $todaySales, 'Gross sales recorded today', true], ['Transactions', $todayTransactions, 'Completed sales today', false], ['Amount received', $todayReceived, 'Payments recorded today', true], ['Change given', $todayChange, 'Change returned today', true]] as [$label, $value, $hint, $isMoney])
             <article class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm shadow-slate-900/[0.03]">
                 <div class="flex items-center justify-between"><p class="text-sm font-medium text-slate-500">{{ $label }}</p><span class="h-2.5 w-2.5 rounded-full bg-[#79c143]"></span></div>
-                <p class="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{{ is_numeric($value) && !is_int($value) ? auth()->user()->business->currency.' '.number_format((float) $value, 2) : number_format((float) $value) }}</p>
+                <p class="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{{ $isMoney ? auth()->user()->business->currency.' '.number_format((float) $value, 2) : number_format((float) $value) }}</p>
                 <p class="mt-1 text-xs text-slate-400">{{ $hint }}</p>
             </article>
         @endforeach
@@ -19,7 +19,7 @@
             <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 class="font-semibold text-slate-900">Sales activity</h2><p class="mt-1 text-sm text-slate-500">Daily sales for the last seven days</p></div><div class="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-[#01553d]">{{ auth()->user()->business->currency }} {{ number_format((float) $monthlySales, 2) }} <span class="font-normal text-emerald-800/70">this month</span></div></div>
             <div class="mt-8 flex h-48 items-end gap-3 border-b border-slate-100 px-2">
                 @foreach($daily as $day)
-                    <div class="flex h-full flex-1 flex-col items-center justify-end gap-2"><div class="w-full max-w-12 rounded-t-lg bg-gradient-to-t from-[#01553d] to-[#79c143] transition hover:opacity-80" style="height: {{ $day['total'] > 0 ? max(5, ($day['total'] / $dailyMaximum) * 100) : 3 }}%" title="{{ $authCurrency = auth()->user()->business->currency }} {{ number_format($day['total'], 2) }}"></div><span class="pb-2 text-[11px] font-medium text-slate-400">{{ $day['label'] }}</span></div>
+                    <div class="flex h-full flex-1 flex-col items-center justify-end gap-2"><div class="w-full max-w-12 rounded-t-lg bg-gradient-to-t from-[#01553d] to-[#79c143] transition hover:opacity-80" style="height: {{ $day['total'] > 0 ? max(5, ($day['total'] / $dailyMaximum) * 100) : 3 }}%" title="{{ auth()->user()->business->currency }} {{ number_format($day['total'], 2) }}"></div><span class="pb-2 text-[11px] font-medium text-slate-400">{{ $day['label'] }}</span></div>
                 @endforeach
             </div>
         </section>
