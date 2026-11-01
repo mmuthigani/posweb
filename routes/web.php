@@ -24,6 +24,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::middleware(['auth', EnsureActiveBusiness::class])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/account/password', [AuthController::class, 'editPassword'])->name('account.password.edit');
+    Route::put('/account/password', [AuthController::class, 'changePassword'])
+        ->middleware('throttle:5,1')->name('account.password.update');
 
     Route::get('/sales', [PosController::class, 'sales'])->name('sales.index');
     Route::get('/sales/export', [PosController::class, 'exportSales'])->name('sales.export');

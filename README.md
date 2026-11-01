@@ -25,7 +25,9 @@ Public business registration is disabled. After configuring the production datab
 php artisan kikimo:create-owner
 ```
 
-The command prompts for business details and a 12-character-minimum password. Do not run `db:seed` to create production accounts. Team accounts are added from **Team members** by a business owner or administrator and must be assigned to an active terminal in that business. Staff access to sales, products, cashiers, reports, and sync history is restricted to their assigned terminal. Administrators can manage business settings and accounts; passwords are never displayed and can only be replaced.
+The command prompts for business details and a 12-character-minimum password. Do not run `db:seed` to create production accounts. After signing in, use **Change password** in the sidebar to replace your own password; the current password is required. Team accounts are added from **Team members** by a business owner or administrator and must be assigned to an active terminal in that business. Staff access to sales, products, cashiers, reports, and sync history is restricted to their assigned terminal. Administrators can manage business settings and accounts; passwords are never displayed and can only be replaced.
+
+For local development only, `php artisan db:seed` creates the demo owner `admin@kikimo.local` with password `12345678`. The seeder refuses to run outside local/testing environments. Change this password after signing in; use `php artisan kikimo:create-owner` to provision production accounts instead.
 
 Configure production mail delivery in `.env` for password reset links. Never enable `APP_DEBUG` in production.
 
@@ -59,7 +61,7 @@ Terminal bearer tokens are stored as hashes; rotate a token immediately if it is
 
 ## Production web server
 
-Set the web server document root to the project's `public` directory, use HTTPS, set `APP_ENV=production` and `APP_DEBUG=false`, and run `php artisan storage:link` only if public storage is needed. Keep the project root and `.env` outside the public document root.
+Set the domain's document root to the project's `public` directory (for example, in cPanel **Domains → Document Root**). This prevents application source, configuration, dependencies, and logs from being web-accessible. If the host cannot set a separate document root, keep the root `.htaccess` rewrite in place; it routes requests through `public/` and disables directory indexes, but a separate `public` document root remains preferred. Deploy the project-root `.htaccess` alongside the application. Use HTTPS, set `APP_ENV=production` and `APP_DEBUG=false`, and run `php artisan storage:link` only if public storage is needed.
 
 ## Tests and assets
 

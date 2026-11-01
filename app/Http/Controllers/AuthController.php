@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -60,6 +61,31 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    public function editPassword(): View
+    {
+        return view('auth.change-password');
+    }
+
+    public function changePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:12', 'confirmed', 'different:current_password'],
+        ]);
+
+        $request->user()->update(['password' => $validated['password']]);
+        $request->session()->regenerate();
+
+        if (config('session.driver') === 'database') {
+            DB::table(config('session.table'))
+                ->where('user_id', $request->user()->id)
+                ->where('id', '!=', $request->session()->getId())
+                ->delete();
+        }
+
+        return back()->with('success', 'Your password has been changed. Other active sessions have been signed out.');
     }
 
     public function forgotPassword(): View

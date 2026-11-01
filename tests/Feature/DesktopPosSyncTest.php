@@ -219,6 +219,34 @@ class DesktopPosSyncTest extends TestCase
         $this->assertTrue(Hash::check('replacement-password', $cashier->fresh()->password));
     }
 
+    public function test_signed_in_user_can_change_their_own_password_after_confirming_current_password(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $user = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'owner-password@example.test',
+            'password' => 'initial-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->put('/account/password', [
+            'current_password' => 'initial-password',
+            'password' => 'replacement-password',
+            'password_confirmation' => 'replacement-password',
+        ])->assertRedirect();
+
+        $this->assertTrue(Hash::check('replacement-password', $user->fresh()->password));
+
+        $this->put('/account/password', [
+            'current_password' => 'incorrect-password',
+            'password' => 'another-replacement-password',
+            'password_confirmation' => 'another-replacement-password',
+        ])->assertSessionHasErrors('current_password');
+
+        $this->assertTrue(Hash::check('replacement-password', $user->fresh()->password));
+    }
+
     private function registeredTerminal(): array
     {
         $business = Business::query()->create([

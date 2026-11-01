@@ -104,7 +104,7 @@ class ReportsController extends Controller
         };
 
         return $sales
-            ->selectRaw("{$expression} AS period, COUNT(*) AS transactions, SUM(total) AS sales, SUM(amount_paid) AS received, SUM(change_due) AS change")
+            ->selectRaw("{$expression} AS period, COUNT(*) AS transactions, SUM(total) AS sales, SUM(amount_paid) AS received, SUM(change_due) AS change_given")
             ->groupByRaw($expression)
             ->orderBy('period')
             ->get();

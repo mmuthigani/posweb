@@ -56,6 +56,11 @@
                     Settings
                 </a>
             @endif
+            <div class="px-3 pb-1 pt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/40">Account</div>
+            <a href="{{ route('account.password.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 5v2"/></svg></span>
+                Change password
+            </a>
         </nav>
         <div class="border-t border-white/10 p-4">
             <div class="flex items-center gap-3">

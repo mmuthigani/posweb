@@ -14,6 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Business owners are provisioned explicitly with `php artisan kikimo:create-owner`.
+        $this->call(LocalOwnerSeeder::class);
     }
 }
