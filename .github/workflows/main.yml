@@ -63,8 +63,6 @@ jobs:
             **/.env.*
             !**/.env.example
             **/storage/**
-            **/bootstrap/cache/**
-            **/vendor/**
 
       - name: Deployment completed
         run: echo "Kikimo POS Web Management System deployed successfully."
