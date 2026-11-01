@@ -62,7 +62,6 @@ jobs:
             **/.env
             **/.env.*
             !**/.env.example
-            **/storage/**
             **/bootstrap/cache/**
             **/vendor/**
 

@@ -97,8 +97,8 @@ class SettingsController extends Controller
         }
         $managedUser->update($validated);
 
-        if (array_key_exists('password', $validated)) {
-            DB::table('sessions')->where('user_id', $managedUser->id)->delete();
+        if (array_key_exists('password', $validated) && config('session.driver') === 'database') {
+            DB::table(config('session.table'))->where('user_id', $managedUser->id)->delete();
         }
 
         return back()->with('success', 'Team member updated.');

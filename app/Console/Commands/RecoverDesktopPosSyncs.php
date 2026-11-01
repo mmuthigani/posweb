@@ -17,6 +17,10 @@ class RecoverDesktopPosSyncs extends Command
         $limit = max(1, min((int) $this->option('limit'), 1000));
         $logs = DesktopPosSyncLog::query()
             ->whereIn('status', ['pending', 'processing', 'failed'])
+            ->where(function ($query): void {
+                $query->whereNull('error_message')
+                    ->orWhere('error_message', 'not like', '[awaiting-auth]%');
+            })
             ->where('received_at', '<=', now()->subMinute())
             ->orderBy('received_at')
             ->limit($limit)

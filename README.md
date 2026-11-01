@@ -39,11 +39,11 @@ Idempotency-Key: <unique-request-key>
 Content-Type: application/json
 ```
 
-The API validates that the terminal is active, its bearer token matches, and the submitted client ID matches the registered terminal. A machine ID alone never grants access. Requests are stored in the existing sync-log table and sale/product imports are applied transactionally before a successful response. Repeated idempotency keys return the original sync record. Import errors retain the original payload and are logged for investigation/retry.
+When a bearer token is supplied, the API validates the active terminal, token, and submitted client ID. To preserve compatibility with existing desktop installations while credentials are being configured, requests without a bearer token are still accepted and stored in the existing sync-log table, but remain pending and are never linked to a business or imported automatically. Unknown machine IDs are handled the same way. Once configured, the desktop terminal must retry the exact request with its valid bearer token; only then can its pending payload be imported. A supplied invalid token is rejected. Repeated idempotency keys return the original sync record, and import errors retain the original payload for authorized retry or investigation.
 
 Sales support `create`, `update`, and `delete`; products are stored with their original flexible JSON payload because no product sync records existed in the database at implementation time. The importer recognizes common product IDs/names and retains all supplied product fields. Confirm the desktop product payload contract before relying on additional product-specific fields.
 
-The importer runs synchronously during the API request so successful sales are immediately available. No queue worker is required for sale imports. A recovery command retries pending, interrupted, and failed imports:
+The importer runs synchronously during an authenticated API request so successful sales are immediately available. No queue worker is required for sale imports. A recovery command retries pending, interrupted, and failed imports; unauthenticated records are excluded and must be retried by the desktop terminal with its bearer token:
 
 ```sh
 php artisan kikimo:recover-syncs --limit=100

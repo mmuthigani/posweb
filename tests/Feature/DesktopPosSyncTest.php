@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\DesktopPosSyncLog;
 use App\Models\PosSale;
 use App\Models\PosTerminal;
+use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -45,7 +46,9 @@ class DesktopPosSyncTest extends TestCase
         $headers = $this->headers($terminal, $token);
 
         $first = $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $payload);
-        $first->assertOk()->assertJsonPath('status', 'success');
+        $first->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'success');
 
         $this->assertDatabaseCount('pos_sales', 1);
         $this->assertDatabaseCount('pos_sale_items', 1);
@@ -56,18 +59,82 @@ class DesktopPosSyncTest extends TestCase
         ]);
 
         $duplicate = $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $payload);
-        $duplicate->assertOk()->assertJsonPath('duplicate', true);
-        $this->assertSame($first->json('sync_id'), $duplicate->json('sync_id'));
+        $duplicate->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'This synchronization request has already been received.');
+        $this->assertSame($first->json('data.sync_id'), $duplicate->json('data.sync_id'));
         $this->assertDatabaseCount('pos_sales', 1);
     }
 
-    public function test_machine_id_without_bearer_token_is_not_authorized(): void
+    public function test_legacy_request_is_stored_but_not_imported_without_bearer_token(): void
     {
         [$terminal] = $this->registeredTerminal();
 
         $this->postJson('/api/desktop-pos/sync', $this->salePayload(), [
-            'Idempotency-Key' => 'missing-token',
-        ])->assertUnauthorized();
+            'Idempotency-Key' => 'legacy-request-19',
+        ])->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'pending');
+
+        $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
+        $this->assertDatabaseCount('pos_sales', 0);
+        $this->assertDatabaseHas('desktop_pos_sync_logs', [
+            'machine_id' => $terminal->machine_id,
+            'status' => 'pending',
+        ]);
+
+        $this->artisan('kikimo:recover-syncs')
+            ->expectsOutput('Processed 0 recoverable sync record(s).')
+            ->assertExitCode(0);
+        $this->assertDatabaseCount('pos_sales', 0);
+    }
+
+    public function test_unregistered_machine_request_is_retained_without_business_assignment(): void
+    {
+        $this->registeredTerminal();
+        $payload = $this->salePayload();
+        $payload['machine_id'] = 'unregistered-machine';
+        $payload['client_id'] = 'unregistered-client';
+
+        $this->withHeaders(['Idempotency-Key' => 'unregistered-request'])
+            ->postJson('/api/desktop-pos/sync', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'pending');
+
+        $this->assertDatabaseHas('desktop_pos_sync_logs', [
+            'machine_id' => 'unregistered-machine',
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseCount('pos_terminals', 1);
+        $this->assertDatabaseCount('pos_sales', 0);
+    }
+
+    public function test_authenticated_retry_imports_an_identical_legacy_request(): void
+    {
+        [$terminal, $token] = $this->registeredTerminal();
+        $payload = $this->salePayload();
+        $headers = $this->headers($terminal, $token);
+        unset($headers['Authorization']);
+
+        $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'pending');
+
+        $retried = $this->withHeaders($this->headers($terminal, $token))
+            ->postJson('/api/desktop-pos/sync', $payload);
+
+        $retried->assertOk()->assertJsonPath('data.status', 'success');
+        $this->assertDatabaseCount('pos_sales', 1);
+        $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
+    }
+
+    public function test_invalid_bearer_token_is_rejected_without_storing_request(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+
+        $this->withHeaders($this->headers($terminal, 'wrong-token'))
+            ->postJson('/api/desktop-pos/sync', $this->salePayload())
+            ->assertUnauthorized();
 
         $this->assertDatabaseCount('desktop_pos_sync_logs', 0);
     }
@@ -117,6 +184,41 @@ class DesktopPosSyncTest extends TestCase
             ->assertDontSee('PRIVATE-RECEIPT');
     }
 
+    public function test_administrator_assigns_a_user_to_a_terminal_and_can_reset_the_password(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $admin = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)->post('/users', [
+            'name' => 'New Cashier',
+            'email' => 'cashier@example.test',
+            'password' => 'initial-password',
+            'password_confirmation' => 'initial-password',
+            'role' => 'staff',
+            'pos_terminal_id' => $terminal->id,
+        ])->assertRedirect();
+
+        $cashier = User::query()->where('email', 'cashier@example.test')->firstOrFail();
+        $this->assertSame($terminal->id, $cashier->pos_terminal_id);
+        $this->assertTrue(Hash::check('initial-password', $cashier->password));
+
+        $this->patch('/users/'.$cashier->id, [
+            'role' => 'staff',
+            'is_active' => true,
+            'pos_terminal_id' => $terminal->id,
+            'password' => 'replacement-password',
+            'password_confirmation' => 'replacement-password',
+        ])->assertRedirect();
+
+        $this->assertTrue(Hash::check('replacement-password', $cashier->fresh()->password));
+    }
+
     private function registeredTerminal(): array
     {
         $business = Business::query()->create([
@@ -158,8 +260,8 @@ class DesktopPosSyncTest extends TestCase
                     'id' => 19,
                     'receipt_no' => 'KDP-TEST-19',
                     'subtotal' => 1000,
-                    'total' => 1000,
-                    'amount_paid' => 1000,
+                    'total' => 880,
+                    'amount_paid' => 880,
                     'change_due' => 0,
                     'payment_method' => 'Cash',
                     'cashier_name' => 'Test cashier',
