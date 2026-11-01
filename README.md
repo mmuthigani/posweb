@@ -6,7 +6,7 @@ A Laravel 12 management dashboard for desktop POS sales, terminals, products, ca
 
 The application uses Laravel's **single default MySQL connection**. Point `DB_DATABASE` in `.env` at the MySQL database that already contains `desktop_pos_sync_logs` (the current local configuration is `kikimode_dev_app`). Do not configure another connection or create another sync database.
 
-The existing `desktop_pos_sync_logs` table and its records are not created, altered, or deleted by the Kikimo POS migration. The migration adds the business tables and nullable business/role fields to the existing `users` table. Its `down()` is intentionally non-destructive because it may adopt tables that existed before this application was installed.
+The existing `desktop_pos_sync_logs` table and its records are not created, altered, or deleted by the Kikimo POS migration. The migration adds the business tables and `business_id`, `role`, and `is_active` fields to the existing `users` table (`business_id` is nullable for existing accounts). Its `down()` is intentionally non-destructive because it may adopt tables that existed before this application was installed.
 
 Before deploying, take a database backup. Then run:
 
@@ -25,7 +25,7 @@ Public business registration is disabled. After configuring the production datab
 php artisan kikimo:create-owner
 ```
 
-The command prompts for business details and a 12-character-minimum password. Do not run `db:seed` to create production accounts. Team accounts are added from **Team members** by a business owner or administrator; records are always restricted to that user's business.
+The command prompts for business details and a 12-character-minimum password. Do not run `db:seed` to create production accounts. Team accounts are added from **Team members** by a business owner or administrator and must be assigned to an active terminal in that business. Staff access to sales, products, cashiers, reports, and sync history is restricted to their assigned terminal. Administrators can manage business settings and accounts; passwords are never displayed and can only be replaced.
 
 Configure production mail delivery in `.env` for password reset links. Never enable `APP_DEBUG` in production.
 

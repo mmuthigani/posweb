@@ -65,10 +65,10 @@
             </div>
         </div>
     </aside>
-    <div class="min-h-screen lg:pl-64">
+    <div id="app-shell" class="min-h-screen transition-[padding] duration-200 lg:pl-64">
         <header class="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur md:px-8">
             <div class="flex items-center gap-3">
-                <button id="sidebar-toggle" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open navigation"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+                <button id="sidebar-toggle" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Toggle navigation" aria-expanded="true" aria-controls="sidebar"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
                 <div><p class="text-xs font-medium text-slate-400">{{ now()->format('l, F j, Y') }}</p><p class="text-sm font-semibold text-slate-700">{{ auth()->user()->business->name }}</p></div>
             </div>
             <div class="flex items-center gap-3">

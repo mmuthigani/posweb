@@ -17,6 +17,18 @@ class EnsureActiveBusiness
             abort(403, 'An active business account is required.');
         }
 
+        if (! $user->isAdministrator()) {
+            $user->loadMissing('posTerminal');
+
+            if (
+                ! $user->posTerminal
+                || ! $user->posTerminal->is_active
+                || $user->posTerminal->business_id !== $user->business_id
+            ) {
+                abort(403, 'Your account must be assigned to an active POS terminal.');
+            }
+        }
+
         return $next($request);
     }
 }

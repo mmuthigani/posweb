@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'business_id',
+        'pos_terminal_id',
         'role',
         'is_active',
     ];
@@ -55,6 +56,11 @@ class User extends Authenticatable
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
+    }
+
+    public function posTerminal(): BelongsTo
+    {
+        return $this->belongsTo(PosTerminal::class);
     }
 
     public function isAdministrator(): bool

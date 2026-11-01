@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -39,10 +40,15 @@ class SettingsController extends Controller
     {
         $users = User::query()
             ->where('business_id', Auth::user()->business_id)
+            ->with('posTerminal')
             ->orderBy('name')
             ->paginate(15);
+        $terminals = PosTerminal::query()
+            ->where('business_id', Auth::user()->business_id)
+            ->orderBy('terminal_name')
+            ->get();
 
-        return view('settings.users', compact('users'));
+        return view('settings.users', compact('users', 'terminals'));
     }
 
     public function storeUser(Request $request): RedirectResponse
@@ -52,6 +58,13 @@ class SettingsController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:12', 'confirmed'],
             'role' => ['required', Rule::in(['admin', 'staff'])],
+            'pos_terminal_id' => [
+                'required',
+                'integer',
+                Rule::exists('pos_terminals', 'id')
+                    ->where('business_id', Auth::user()->business_id)
+                    ->where('is_active', true),
+            ],
         ]);
         User::query()->create([
             ...$validated,
@@ -70,8 +83,23 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'role' => ['required', Rule::in(['admin', 'staff'])],
             'is_active' => ['required', 'boolean'],
+            'pos_terminal_id' => [
+                'required',
+                'integer',
+                Rule::exists('pos_terminals', 'id')
+                    ->where('business_id', Auth::user()->business_id)
+                    ->where('is_active', true),
+            ],
+            'password' => ['nullable', 'string', 'min:12', 'confirmed'],
         ]);
+        if (! filled($validated['password'] ?? null)) {
+            unset($validated['password']);
+        }
         $managedUser->update($validated);
+
+        if (array_key_exists('password', $validated)) {
+            DB::table('sessions')->where('user_id', $managedUser->id)->delete();
+        }
 
         return back()->with('success', 'Team member updated.');
     }

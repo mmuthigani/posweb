@@ -33,6 +33,7 @@ class AuthenticateDesktopTerminal
             return response()->json(['message' => 'Terminal credentials are invalid.'], 401);
         }
 
+        $terminal->forceFill(['last_seen_at' => now()])->save();
         $request->attributes->set('pos_terminal', $terminal);
 
         return $next($request);

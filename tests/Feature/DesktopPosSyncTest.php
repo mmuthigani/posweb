@@ -88,8 +88,17 @@ class DesktopPosSyncTest extends TestCase
             'api_token_hash' => Hash::make('other-token'),
             'is_active' => true,
         ]);
+        $otherOwnBusinessTerminal = PosTerminal::query()->create([
+            'business_id' => $terminal->business_id,
+            'machine_id' => 'machine-other-till',
+            'client_id' => 'client-other-till',
+            'terminal_name' => 'Other till',
+            'api_token_hash' => Hash::make('other-till-token'),
+            'is_active' => true,
+        ]);
 
         $this->createSale($terminal, 19, 'OWN-RECEIPT');
+        $this->createSale($otherOwnBusinessTerminal, 21, 'OTHER-TILL-RECEIPT');
         $this->createSale($otherTerminal, 20, 'PRIVATE-RECEIPT');
 
         $user = $terminal->business->users()->create([
@@ -97,12 +106,14 @@ class DesktopPosSyncTest extends TestCase
             'email' => 'staff@example.test',
             'password' => 'password-password',
             'role' => 'staff',
+            'pos_terminal_id' => $terminal->id,
             'is_active' => true,
         ]);
 
         $this->actingAs($user)->get('/sales')
             ->assertOk()
             ->assertSee('OWN-RECEIPT')
+            ->assertDontSee('OTHER-TILL-RECEIPT')
             ->assertDontSee('PRIVATE-RECEIPT');
     }
 

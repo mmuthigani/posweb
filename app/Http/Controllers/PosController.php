@@ -70,6 +70,7 @@ class PosController extends Controller
         $request->validate(['q' => ['nullable', 'string', 'max:150']]);
         $products = Product::query()
             ->where('business_id', Auth::user()->business_id)
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->where('terminal_id', Auth::user()->pos_terminal_id))
             ->when($request->filled('q'), function (Builder $query) use ($request): void {
                 $term = '%'.$request->string('q')->toString().'%';
                 $query->where(function (Builder $search) use ($term): void {
@@ -108,6 +109,7 @@ class PosController extends Controller
     {
         $terminals = PosTerminal::query()
             ->where('business_id', Auth::user()->business_id)
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->whereKey(Auth::user()->pos_terminal_id))
             ->withCount('sales')
             ->latest()
             ->paginate(15);
@@ -118,6 +120,7 @@ class PosController extends Controller
     public function terminalSales(PosTerminal $terminal, Request $request): View
     {
         abort_unless($terminal->business_id === Auth::user()->business_id, 404);
+        abort_unless(Auth::user()->isAdministrator() || $terminal->id === Auth::user()->pos_terminal_id, 404);
         $this->validateSalesFilters($request);
         $sales = $this->filteredSales($request)->where('terminal_id', $terminal->id)->with('terminal')->latest('sold_at')->paginate(15)->withQueryString();
 
@@ -132,7 +135,10 @@ class PosController extends Controller
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
-        $machineIds = PosTerminal::query()->where('business_id', Auth::user()->business_id)->pluck('machine_id');
+        $terminals = PosTerminal::query()
+            ->where('business_id', Auth::user()->business_id)
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->whereKey(Auth::user()->pos_terminal_id));
+        $machineIds = (clone $terminals)->pluck('machine_id');
         $syncLogs = DesktopPosSyncLog::query()
             ->whereIn('machine_id', $machineIds)
             ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')->toString()))
@@ -166,7 +172,9 @@ class PosController extends Controller
 
     private function businessSales(): Builder
     {
-        return PosSale::query()->where('business_id', Auth::user()->business_id);
+        return PosSale::query()
+            ->where('business_id', Auth::user()->business_id)
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->where('terminal_id', Auth::user()->pos_terminal_id));
     }
 
     private function filteredSales(Request $request): Builder
@@ -188,6 +196,7 @@ class PosController extends Controller
         abort_unless(
             PosTerminal::query()
                 ->where('business_id', Auth::user()->business_id)
+                ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->whereKey(Auth::user()->pos_terminal_id))
                 ->where('machine_id', $syncLog->machine_id)
                 ->exists(),
             404,
