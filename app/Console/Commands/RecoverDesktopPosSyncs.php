@@ -18,8 +18,19 @@ class RecoverDesktopPosSyncs extends Command
         $logs = DesktopPosSyncLog::query()
             ->whereIn('status', ['pending', 'processing', 'failed'])
             ->where(function ($query): void {
-                $query->whereNull('error_message')
-                    ->orWhere('error_message', 'not like', '[awaiting-auth]%');
+                $query->where(function ($query): void {
+                    $query->whereNull('error_message')
+                        ->orWhere(function ($query): void {
+                            $query->where('error_message', 'not like', '[awaiting-auth]%')
+                                ->where('error_message', 'not like', '[unregistered-terminal]%');
+                        });
+                })->orWhereExists(function ($query): void {
+                    $query->selectRaw('1')
+                        ->from('pos_terminals')
+                        ->whereColumn('pos_terminals.machine_id', 'desktop_pos_sync_logs.machine_id')
+                        ->whereColumn('pos_terminals.client_id', 'desktop_pos_sync_logs.client_id')
+                        ->where('pos_terminals.is_active', true);
+                });
             })
             ->where('received_at', '<=', now()->subMinute())
             ->orderBy('received_at')

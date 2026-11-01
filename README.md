@@ -33,19 +33,19 @@ Configure production mail delivery in `.env` for password reset links. Never ena
 
 ## Desktop POS sync
 
-The endpoint is `POST /api/desktop-pos/sync` (not `/api/api/...`). Register each terminal in the dashboard using the exact machine and client IDs sent by the desktop POS. A random bearer token is displayed once during registration; store it securely in the desktop app and send:
+The endpoint is `POST /api/desktop-pos/sync` (not `/api/api/...`). Register each terminal in the dashboard using the exact machine and client IDs sent by the desktop POS. The desktop client may omit bearer authentication; both identifiers must match an active terminal registered to a business. If a bearer token is supplied, it is validated. The token is optional, not a substitute for matching both registered IDs:
 
 ```http
 Authorization: Bearer <terminal-token>
-Idempotency-Key: <unique-request-key>
+Idempotency-Key: <unique-key-per-queued-event>
 Content-Type: application/json
 ```
 
-When a bearer token is supplied, the API validates the active terminal, token, and submitted client ID. To preserve compatibility with existing desktop installations while credentials are being configured, requests without a bearer token are still accepted and stored in the existing sync-log table, but remain pending and are never linked to a business or imported automatically. Unknown machine IDs are handled the same way. Once configured, the desktop terminal must retry the exact request with its valid bearer token; only then can its pending payload be imported. A supplied invalid token is rejected. Repeated idempotency keys return the original sync record, and import errors retain the original payload for authorized retry or investigation.
+Requests without a bearer token from an active, registered machine/client pair are imported synchronously. Because those IDs are not secrets, an attacker who learns them could impersonate that terminal; use HTTPS, keep the API rate limit enabled, and prefer bearer authentication when the desktop deployment supports it. Unknown or inactive terminals are stored as pending and are not associated with a business; they can be recovered after an administrator registers the exact machine/client pair. A supplied invalid token is rejected. Use a unique idempotency key for each queued event, and reuse that same key when retrying that event; repeated keys return the original sync record. Import errors retain the original payload for retry or investigation.
 
-Sales support `create`, `update`, and `delete`; products are stored with their original flexible JSON payload because no product sync records existed in the database at implementation time. The importer recognizes common product IDs/names and retains all supplied product fields. Confirm the desktop product payload contract before relying on additional product-specific fields.
+Sales support `create`, `update`, and `delete`. Product sync supports `upsert` and `delete` operations and retains the original flexible JSON payload. The importer recognizes the desktop product's `id`, `name`, `sku`, `barcode`, `price`, and `stock` fields.
 
-The importer runs synchronously during an authenticated API request so successful sales are immediately available. No queue worker is required for sale imports. A recovery command retries pending, interrupted, and failed imports; unauthenticated records are excluded and must be retried by the desktop terminal with its bearer token:
+The importer runs synchronously for matching registered terminals so successful sales and products are immediately available. No queue worker is required. A recovery command retries pending, interrupted, and failed imports after a terminal with matching machine/client IDs is registered:
 
 ```sh
 php artisan kikimo:recover-syncs --limit=100

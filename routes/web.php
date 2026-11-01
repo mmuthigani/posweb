@@ -8,14 +8,16 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Middleware\EnsureActiveBusiness;
 use App\Http\Middleware\RequireAdministrator;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/clear', function () {
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
     Artisan::call('config:cache');
     Artisan::call('view:clear');
-     Artisan::call('key:generate');
-    return "Cleared!";
+    Artisan::call('key:generate');
+
+    return 'Cleared!';
 });
 
 Route::get('/migrate', function () {

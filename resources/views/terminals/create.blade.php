@@ -1,9 +1,41 @@
 @extends('layouts.app')
 @section('title', 'Register terminal')
 @section('content')
-    <div class="mx-auto max-w-3xl"><a href="{{ route('terminals.index') }}" class="text-sm font-medium text-[#01553d] hover:underline">← POS terminals</a><div class="mt-3"><h1 class="text-2xl font-semibold tracking-tight text-slate-900">Register a POS terminal</h1><p class="mt-1 text-sm text-slate-500">This installation will be assigned to {{ auth()->user()->business->name }}.</p></div>
-        <form method="POST" action="{{ route('terminals.store') }}" class="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">@csrf<div class="grid gap-5 sm:grid-cols-2"><div class="sm:col-span-2"><label for="terminal_name" class="mb-1.5 block text-sm font-medium text-slate-700">Terminal name</label><input id="terminal_name" name="terminal_name" required value="{{ old('terminal_name') }}" placeholder="Front counter" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5"></div><div><label for="machine_id" class="mb-1.5 block text-sm font-medium text-slate-700">Machine ID</label><input id="machine_id" name="machine_id" required maxlength="100" value="{{ old('machine_id') }}" placeholder="Exact desktop machine ID" class="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm focus:border-[#2b805b] focus:outline-none"><p class="mt-1.5 text-xs text-slate-400">Must exactly match the ID sent by the desktop POS.</p></div><div><label for="client_id" class="mb-1.5 block text-sm font-medium text-slate-700">Client ID</label><input id="client_id" name="client_id" required maxlength="100" value="{{ old('client_id') }}" placeholder="Desktop client ID" class="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm focus:border-[#2b805b] focus:outline-none"><p class="mt-1.5 text-xs text-slate-400">Must match the client ID sent by this installation.</p></div></div>
-            <div class="mt-6 rounded-xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-900"><p class="font-semibold">Secure connection</p><p class="mt-1">A random bearer token is generated after registration and displayed once. Configure the desktop app to send it as <code class="rounded bg-white/70 px-1">Authorization: Bearer …</code>.</p></div><div class="mt-6 flex justify-end gap-3"><a href="{{ route('terminals.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</a><button class="rounded-xl bg-[#01553d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0a2a1d]">Register terminal</button></div>
+    <div class="mx-auto max-w-3xl">
+        <a href="{{ route('terminals.index') }}" class="text-sm font-medium text-[#01553d] hover:underline">← POS terminals</a>
+        <div class="mt-3">
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Register a POS terminal</h1>
+            <p class="mt-1 text-sm text-slate-500">This installation will be assigned to {{ auth()->user()->business->name }}.</p>
+        </div>
+
+        <form method="POST" action="{{ route('terminals.store') }}" class="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
+            @csrf
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label for="terminal_name" class="mb-1.5 block text-sm font-medium text-slate-700">Terminal name</label>
+                    <input id="terminal_name" name="terminal_name" required value="{{ old('terminal_name') }}" placeholder="Front counter" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
+                </div>
+                <div>
+                    <label for="machine_id" class="mb-1.5 block text-sm font-medium text-slate-700">Machine ID</label>
+                    <input id="machine_id" name="machine_id" required maxlength="100" value="{{ old('machine_id') }}" placeholder="Exact desktop machine ID" class="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm focus:border-[#2b805b] focus:outline-none">
+                    <p class="mt-1.5 text-xs text-slate-400">Must exactly match the ID sent by the desktop POS.</p>
+                </div>
+                <div>
+                    <label for="client_id" class="mb-1.5 block text-sm font-medium text-slate-700">Client ID</label>
+                    <input id="client_id" name="client_id" required maxlength="100" value="{{ old('client_id') }}" placeholder="Desktop client ID" class="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm focus:border-[#2b805b] focus:outline-none">
+                    <p class="mt-1.5 text-xs text-slate-400">Must match the client ID sent by this installation.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                <p class="font-semibold">Terminal identity</p>
+                <p class="mt-1">Sync requests can omit a bearer token. Both IDs must match this active registration. These identifiers are not secrets, so use HTTPS and register only trusted machines. If your desktop app supports bearer tokens, the optional token provides stronger verification.</p>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <a href="{{ route('terminals.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</a>
+                <button class="rounded-xl bg-[#01553d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0a2a1d]">Register terminal</button>
+            </div>
         </form>
     </div>
 @endsection

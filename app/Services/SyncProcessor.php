@@ -36,6 +36,7 @@ class SyncProcessor
 
                 $terminal = PosTerminal::query()
                     ->where('machine_id', $log->machine_id)
+                    ->where('client_id', $log->client_id)
                     ->where('is_active', true)
                     ->firstOrFail();
 
@@ -159,8 +160,13 @@ class SyncProcessor
             $desktopId = (int) ($record['id'] ?? $record['product_id'] ?? 0);
             $name = $record['name'] ?? $record['product_name'] ?? null;
 
-            if ($desktopId < 1 || ! is_string($name) || trim($name) === '') {
-                throw new RuntimeException('Each product must include an ID and a name.');
+            if (
+                $desktopId < 1
+                || $desktopId !== (int) $log->entity_id
+                || ! is_string($name)
+                || trim($name) === ''
+            ) {
+                throw new RuntimeException('Each product must include a matching ID and a name.');
             }
 
             Product::query()->updateOrCreate(
@@ -174,7 +180,7 @@ class SyncProcessor
                     'sku' => $record['sku'] ?? $record['product_code'] ?? null,
                     'barcode' => $record['barcode'] ?? null,
                     'unit_price' => $record['unit_price'] ?? $record['selling_price'] ?? $record['price'] ?? null,
-                    'stock_quantity' => $record['stock_quantity'] ?? $record['quantity'] ?? null,
+                    'stock_quantity' => $record['stock_quantity'] ?? $record['stock'] ?? $record['quantity'] ?? null,
                     'payload' => $record,
                     'synced_at' => now(),
                 ],

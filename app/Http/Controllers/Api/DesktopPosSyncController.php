@@ -9,10 +9,11 @@ use App\Services\SyncProcessor;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class DesktopPosSyncController extends Controller
 {
-    private const AUTHENTICATION_REQUIRED = '[awaiting-auth]';
+    private const UNREGISTERED_TERMINAL = '[unregistered-terminal]';
 
     public function __invoke(Request $request, SyncProcessor $processor): JsonResponse
     {
@@ -23,16 +24,23 @@ class DesktopPosSyncController extends Controller
             'machine_id' => ['required', 'string', 'max:100'],
             'entity_type' => ['required', 'string', 'in:sale,product'],
             'entity_id' => ['required', 'integer', 'min:1'],
-            'operation' => ['required', 'in:create,update,delete'],
+            'operation' => ['required', 'in:create,update,delete,upsert'],
             'payload' => ['required', 'array'],
             'idempotency_key' => ['required', 'string', 'max:150'],
             'payload.sale' => ['sometimes', 'array'],
             'payload.items' => ['sometimes', 'array'],
             'payload.items.*' => ['array'],
         ]);
+        $validated['payload'] = $request->input('payload');
 
         /** @var PosTerminal|null $terminal */
         $terminal = $request->attributes->get('pos_terminal');
+
+        if ($validated['operation'] === 'upsert' && $validated['entity_type'] !== 'product') {
+            throw ValidationException::withMessages([
+                'operation' => 'The upsert operation is only supported for products.',
+            ]);
+        }
 
         if ($validated['entity_type'] === 'sale' && $validated['operation'] !== 'delete') {
             $request->validate([
@@ -55,7 +63,7 @@ class DesktopPosSyncController extends Controller
                 'payload' => $validated['payload'],
                 'idempotency_key' => $validated['idempotency_key'],
                 'status' => 'pending',
-                'error_message' => $terminal ? null : self::AUTHENTICATION_REQUIRED.' Terminal registration and bearer authentication are required before import.',
+                'error_message' => $terminal ? null : self::UNREGISTERED_TERMINAL.' Register this exact machine_id and client_id to a business before importing this request.',
                 'received_at' => now(),
             ]);
         } catch (QueryException $exception) {
@@ -68,7 +76,18 @@ class DesktopPosSyncController extends Controller
                 throw $exception;
             }
 
-            if ($terminal && $existing->status !== 'success' && $this->requestMatchesLog($validated, $existing)) {
+            if (! $this->requestMatchesLog($validated, $existing)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This Idempotency-Key was already used for a different synchronization request.',
+                    'data' => [
+                        'sync_id' => $existing->id,
+                        'status' => $existing->status,
+                    ],
+                ], 409);
+            }
+
+            if ($terminal && $existing->status !== 'success') {
                 $syncLog = $processor->process($existing);
             } else {
                 $syncLog = $existing;

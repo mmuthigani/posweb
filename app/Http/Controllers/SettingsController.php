@@ -136,7 +136,7 @@ class SettingsController extends Controller
         ]);
 
         return redirect()->route('terminals.index')
-            ->with('success', 'Terminal registered. Copy its bearer token now; it will not be shown again.')
+            ->with('success', 'Terminal registered. Bearer authentication is optional; the token can still be used for stronger request verification.')
             ->with('terminal_token', $token)
             ->with('terminal_name', $terminal->terminal_name);
     }

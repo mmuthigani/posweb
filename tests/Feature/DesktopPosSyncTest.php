@@ -7,37 +7,13 @@ use App\Models\DesktopPosSyncLog;
 use App\Models\PosSale;
 use App\Models\PosTerminal;
 use App\Models\User;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class DesktopPosSyncTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Schema::create('desktop_pos_sync_logs', function (Blueprint $table): void {
-            $table->id();
-            $table->string('client_id', 100);
-            $table->string('machine_id', 100);
-            $table->string('entity_type', 50);
-            $table->unsignedBigInteger('entity_id');
-            $table->string('operation', 20);
-            $table->json('payload');
-            $table->string('idempotency_key', 150)->nullable();
-            $table->string('status')->default('pending');
-            $table->text('error_message')->nullable();
-            $table->timestamp('received_at')->nullable();
-            $table->timestamp('processed_at')->nullable();
-            $table->timestamps();
-            $table->unique(['machine_id', 'idempotency_key']);
-        });
-    }
 
     public function test_registered_terminal_syncs_sale_and_retries_idempotently(): void
     {
@@ -66,7 +42,7 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseCount('pos_sales', 1);
     }
 
-    public function test_legacy_request_is_stored_but_not_imported_without_bearer_token(): void
+    public function test_registered_terminal_syncs_sale_without_bearer_token(): void
     {
         [$terminal] = $this->registeredTerminal();
 
@@ -74,19 +50,70 @@ class DesktopPosSyncTest extends TestCase
             'Idempotency-Key' => 'legacy-request-19',
         ])->assertCreated()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.status', 'pending');
+            ->assertJsonPath('data.status', 'success');
 
         $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
-        $this->assertDatabaseCount('pos_sales', 0);
+        $this->assertDatabaseCount('pos_sales', 1);
         $this->assertDatabaseHas('desktop_pos_sync_logs', [
             'machine_id' => $terminal->machine_id,
-            'status' => 'pending',
+            'status' => 'success',
         ]);
+    }
 
-        $this->artisan('kikimo:recover-syncs')
-            ->expectsOutput('Processed 0 recoverable sync record(s).')
-            ->assertExitCode(0);
-        $this->assertDatabaseCount('pos_sales', 0);
+    public function test_reusing_an_idempotency_key_for_a_different_payload_is_rejected(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $headers = ['Idempotency-Key' => 'same-key'];
+
+        $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $this->salePayload())
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $changedPayload = $this->salePayload();
+        $changedPayload['payload']['sale']['total'] = 999;
+
+        $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $changedPayload)
+            ->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseCount('pos_sales', 1);
+        $this->assertDatabaseHas('pos_sales', [
+            'terminal_id' => $terminal->id,
+            'desktop_sale_id' => 19,
+            'total' => 880,
+        ]);
+    }
+
+    public function test_registered_terminal_upserts_product_without_bearer_token(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+
+        $this->withHeaders(['Idempotency-Key' => 'product-9-upsert-event-1'])
+            ->postJson('/api/desktop-pos/sync', [
+                'client_id' => $terminal->client_id,
+                'machine_id' => $terminal->machine_id,
+                'entity_type' => 'product',
+                'entity_id' => 9,
+                'operation' => 'upsert',
+                'payload' => [
+                    'id' => 9,
+                    'name' => 'Sample Product',
+                    'sku' => 'SKU-9',
+                    'barcode' => '123456789',
+                    'price' => 125.50,
+                    'stock' => 7,
+                ],
+            ])->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $this->assertDatabaseHas('products', [
+            'business_id' => $terminal->business_id,
+            'desktop_product_id' => 9,
+            'name' => 'Sample Product',
+            'sku' => 'SKU-9',
+            'unit_price' => 125.50,
+            'stock_quantity' => 7,
+        ]);
     }
 
     public function test_unregistered_machine_request_is_retained_without_business_assignment(): void
@@ -109,21 +136,30 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseCount('pos_sales', 0);
     }
 
-    public function test_authenticated_retry_imports_an_identical_legacy_request(): void
+    public function test_unregistered_request_is_recovered_after_admin_registers_matching_terminal(): void
     {
-        [$terminal, $token] = $this->registeredTerminal();
+        $this->registeredTerminal();
         $payload = $this->salePayload();
-        $headers = $this->headers($terminal, $token);
-        unset($headers['Authorization']);
+        $payload['machine_id'] = 'machine-waiting-for-registration';
+        $payload['client_id'] = 'client-waiting-for-registration';
 
-        $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $payload)
+        $this->withHeaders(['Idempotency-Key' => 'late-register-request'])
+            ->postJson('/api/desktop-pos/sync', $payload)
             ->assertCreated()
             ->assertJsonPath('data.status', 'pending');
 
-        $retried = $this->withHeaders($this->headers($terminal, $token))
-            ->postJson('/api/desktop-pos/sync', $payload);
+        $business = Business::query()->where('business_code', 'TEST-001')->firstOrFail();
+        PosTerminal::query()->create([
+            'business_id' => $business->id,
+            'machine_id' => $payload['machine_id'],
+            'client_id' => $payload['client_id'],
+            'terminal_name' => 'Newly registered terminal',
+            'api_token_hash' => Hash::make('optional-token'),
+            'is_active' => true,
+        ]);
 
-        $retried->assertOk()->assertJsonPath('data.status', 'success');
+        $this->travel(2)->minutes();
+        $this->artisan('kikimo:recover-syncs')->assertExitCode(0);
         $this->assertDatabaseCount('pos_sales', 1);
         $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
     }

@@ -162,11 +162,6 @@ class PosController extends Controller
     public function retrySync(DesktopPosSyncLog $syncLog, SyncProcessor $processor)
     {
         $this->authorizeSyncLog($syncLog);
-        abort_if(
-            str_starts_with((string) $syncLog->error_message, '[awaiting-auth]'),
-            409,
-            'This request must be retried by its desktop terminal with valid bearer authentication.',
-        );
         $syncLog = $processor->process($syncLog);
 
         return redirect()->route('sync.show', $syncLog)->with(

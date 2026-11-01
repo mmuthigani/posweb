@@ -16,25 +16,27 @@ class ResolveDesktopTerminal
         $clientId = $request->input('client_id');
         $bearerToken = $request->bearerToken();
 
-        if (! $bearerToken) {
-            return $next($request);
-        }
-
         $terminal = PosTerminal::query()
             ->where('machine_id', $machineId)
+            ->where('client_id', $clientId)
             ->where('is_active', true)
             ->first();
 
         if (
             ! $terminal
-            || ! $terminal->api_token_hash
-            || ! hash_equals((string) $terminal->client_id, (string) $clientId)
-            || ! Hash::check($bearerToken, $terminal->api_token_hash)
+            || ($bearerToken && (
+                ! $terminal->api_token_hash
+                || ! Hash::check($bearerToken, $terminal->api_token_hash)
+            ))
         ) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terminal credentials are invalid or the terminal is not registered.',
-            ], 401);
+            if ($bearerToken) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terminal credentials are invalid or the terminal is not registered.',
+                ], 401);
+            }
+
+            return $next($request);
         }
 
         $terminal->forceFill(['last_seen_at' => now()])->save();
