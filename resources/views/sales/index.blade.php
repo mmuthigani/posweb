@@ -1,0 +1,23 @@
+@extends('layouts.app')
+@section('title', isset($terminal) ? $terminal->terminal_name.' sales' : 'Sales')
+@section('content')
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div><p class="text-sm font-medium text-[#01553d]">Transactions</p><h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{{ isset($terminal) ? $terminal->terminal_name.' sales' : 'Sales' }}</h1><p class="mt-1 text-sm text-slate-500">Search, filter and review synced transactions.</p></div>
+        <a href="{{ route('sales.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v4h16v-4"/></svg>Export CSV</a>
+    </div>
+    <form method="GET" class="mb-5 grid gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5">
+        <input name="q" value="{{ request('q') }}" placeholder="Receipt or cashier" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
+        <input name="payment_method" value="{{ request('payment_method') }}" placeholder="Payment method" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
+        <label class="sr-only" for="from">From date</label><input id="from" type="date" name="from" value="{{ request('from') }}" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-600 focus:border-[#2b805b] focus:outline-none">
+        <label class="sr-only" for="to">To date</label><input id="to" type="date" name="to" value="{{ request('to') }}" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-600 focus:border-[#2b805b] focus:outline-none">
+        <div class="flex gap-2"><button class="flex-1 rounded-xl bg-[#01553d] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0a2a1d]">Apply filters</button><a href="{{ isset($terminal) ? route('terminals.sales', $terminal) : route('sales.index') }}" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50">Clear</a></div>
+    </form>
+    <section class="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4"><p class="text-sm text-slate-500"><span class="font-semibold text-slate-800">{{ $sales->total() }}</span> transactions</p></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[850px] text-left text-sm"><thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400"><tr><th class="px-5 py-3 font-semibold">Receipt</th><th class="px-5 py-3 font-semibold">Cashier</th><th class="px-5 py-3 font-semibold">Terminal</th><th class="px-5 py-3 font-semibold">Payment</th><th class="px-5 py-3 text-right font-semibold">Total</th><th class="px-5 py-3 font-semibold">Date</th><th class="px-5 py-3"></th></tr></thead><tbody class="divide-y divide-slate-100">
+            @forelse($sales as $sale)<tr class="transition hover:bg-slate-50/70"><td class="px-5 py-4"><a href="{{ route('sales.show', $sale) }}" class="font-semibold text-[#01553d] hover:underline">{{ $sale->receipt_no ?: '#'.$sale->desktop_sale_id }}</a></td><td class="px-5 py-4 text-slate-600">{{ $sale->cashier_name ?: '—' }}@if($sale->cashier_id)<span class="mt-0.5 block text-xs text-slate-400">ID {{ $sale->cashier_id }}</span>@endif</td><td class="px-5 py-4 text-slate-600">{{ $sale->terminal?->terminal_name ?: '—' }}</td><td class="px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $sale->payment_method ?: 'Other' }}</span></td><td class="px-5 py-4 text-right font-semibold text-slate-900">{{ auth()->user()->business->currency }} {{ number_format((float) $sale->total, 2) }}</td><td class="px-5 py-4 text-slate-500">{{ $sale->sold_at?->format('M j, Y H:i') ?: '—' }}</td><td class="px-5 py-4 text-right"><a href="{{ route('sales.show', $sale) }}" class="text-sm font-semibold text-[#01553d] hover:underline">View</a></td></tr>
+            @empty<tr><td colspan="7" class="px-5 py-16 text-center"><p class="font-medium text-slate-700">No sales found</p><p class="mt-1 text-sm text-slate-400">Try a different search or date range.</p></td></tr>@endforelse
+        </tbody></table></div>
+        <div class="border-t border-slate-100 px-5 py-4">{{ $sales->links() }}</div>
+    </section>
+@endsection
