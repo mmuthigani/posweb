@@ -143,8 +143,8 @@ class PosController extends Controller
             ->whereIn('machine_id', $machineIds)
             ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')->toString()))
             ->when($request->filled('entity_type'), fn (Builder $query) => $query->where('entity_type', $request->string('entity_type')->toString()))
-            ->when($request->filled('from'), fn (Builder $query) => $query->whereDate('received_at', '>=', $request->date('from')))
-            ->when($request->filled('to'), fn (Builder $query) => $query->whereDate('received_at', '<=', $request->date('to')))
+            ->when($request->filled('from'), fn (Builder $query) => $query->where('received_at', '>=', $request->date('from')->startOfDay()))
+            ->when($request->filled('to'), fn (Builder $query) => $query->where('received_at', '<=', $request->date('to')->endOfDay()))
             ->latest('received_at')
             ->paginate(20)
             ->withQueryString();
