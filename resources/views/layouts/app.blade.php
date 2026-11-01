@@ -17,7 +17,7 @@
             },
         };
     </script>
-    @vite('resources/js/app.js')
+    <!-- @vite('resources/js/app.js') -->
 </head>
 <body class="min-h-full text-slate-800 antialiased">
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
