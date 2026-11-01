@@ -9,6 +9,24 @@ use App\Http\Middleware\EnsureActiveBusiness;
 use App\Http\Middleware\RequireAdministrator;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/clear', function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('config:cache');
+    Artisan::call('view:clear');
+     Artisan::call('key:generate');
+    return "Cleared!";
+});
+
+Route::get('/migrate', function () {
+
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+    ]);
+
+    return response('✅ Database migrated and seeded successfully.', 200);
+});
+
 Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
