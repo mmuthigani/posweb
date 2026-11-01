@@ -3,7 +3,19 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}"><title>Sign in · KIKIMO POS</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+       <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Instrument Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <!-- @vite('resources/js/app.js') -->
 </head>
 <body class="flex min-h-full items-center justify-center bg-[#f5f8f6] px-4 py-10">
     <main class="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl shadow-emerald-950/10 md:min-h-[590px] md:grid-cols-2">
