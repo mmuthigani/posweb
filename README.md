@@ -33,7 +33,7 @@ Configure production mail delivery in `.env` for password reset links. Never ena
 
 ## Desktop POS sync
 
-The endpoint is `POST /api/desktop-pos/sync` (not `/api/api/...`). Register each terminal in the dashboard using the exact machine and client IDs sent by the desktop POS. The desktop client may omit bearer authentication; both identifiers must match an active terminal registered to a business. If a bearer token is supplied, it is validated. The token is optional, not a substitute for matching both registered IDs:
+The endpoint is `POST /api/desktop-pos/sync` (not `/api/api/...`). Register each terminal in the dashboard using the exact machine and client IDs sent by the desktop POS. Bearer authentication is disabled: the `Authorization` header can be omitted, and any supplied value is ignored. The API matches both submitted machine and client IDs against an active terminal registered to a business:
 
 ```http
 Authorization: Bearer <terminal-token>
@@ -41,7 +41,7 @@ Idempotency-Key: <unique-key-per-queued-event>
 Content-Type: application/json
 ```
 
-Requests without a bearer token from an active, registered machine/client pair are imported synchronously. Because those IDs are not secrets, an attacker who learns them could impersonate that terminal; use HTTPS, keep the API rate limit enabled, and prefer bearer authentication when the desktop deployment supports it. Unknown or inactive terminals are stored as pending and are not associated with a business; they can be recovered after an administrator registers the exact machine/client pair. A supplied invalid token is rejected. Use a unique idempotency key for each queued event, and reuse that same key when retrying that event; repeated keys return the original sync record. Import errors retain the original payload for retry or investigation.
+Requests matching an active, registered machine/client pair are imported synchronously. Because those IDs are not secrets, an attacker who learns them could impersonate that terminal; use HTTPS and keep the API rate limit enabled. Unknown or inactive terminals are stored as pending and are not associated with a business; they can be recovered after an administrator registers the exact machine/client pair. Use a unique idempotency key for each queued event, and reuse that same key when retrying that event; repeated keys return the original sync record. Import errors retain the original payload for retry or investigation.
 
 Sales support `create`, `update`, and `delete`. Product sync supports `upsert` and `delete` operations and retains the original flexible JSON payload. The importer recognizes the desktop product's `id`, `name`, `sku`, `barcode`, `price`, and `stock` fields.
 
@@ -57,7 +57,7 @@ For cPanel, configure the scheduler cron once per minute:
 * * * * * cd /absolute/path/to/application && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Terminal bearer tokens are stored as hashes; rotate a token immediately if it is exposed. Restrict access to `.env`, logs, and the application storage directory.
+Restrict access to `.env`, logs, and the application storage directory.
 
 ## Production web server
 

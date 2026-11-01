@@ -60,6 +60,27 @@ class DesktopPosSyncTest extends TestCase
         ]);
     }
 
+    public function test_registered_terminal_syncs_sale_with_minimal_sale_fields(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $payload = $this->salePayload();
+        $payload['payload'] = [
+            'sale' => ['total' => 3],
+            'items' => [[]],
+        ];
+
+        $this->withHeaders(['Idempotency-Key' => 'minimal-sale'])
+            ->postJson('/api/desktop-pos/sync', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $this->assertDatabaseHas('pos_sales', [
+            'business_id' => $terminal->business_id,
+            'desktop_sale_id' => 19,
+            'total' => 3,
+        ]);
+    }
+
     public function test_reusing_an_idempotency_key_for_a_different_payload_is_rejected(): void
     {
         [$terminal] = $this->registeredTerminal();
@@ -131,6 +152,7 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseHas('desktop_pos_sync_logs', [
             'machine_id' => 'unregistered-machine',
             'status' => 'pending',
+            'error_message' => '[unregistered-terminal] Register this exact machine_id and client_id to a business before importing this request.',
         ]);
         $this->assertDatabaseCount('pos_terminals', 1);
         $this->assertDatabaseCount('pos_sales', 0);
@@ -164,15 +186,17 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
     }
 
-    public function test_invalid_bearer_token_is_rejected_without_storing_request(): void
+    public function test_registered_terminal_sync_ignores_bearer_header(): void
     {
         [$terminal] = $this->registeredTerminal();
 
         $this->withHeaders($this->headers($terminal, 'wrong-token'))
             ->postJson('/api/desktop-pos/sync', $this->salePayload())
-            ->assertUnauthorized();
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'success');
 
-        $this->assertDatabaseCount('desktop_pos_sync_logs', 0);
+        $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
+        $this->assertDatabaseCount('pos_sales', 1);
     }
 
     public function test_sales_from_other_business_are_not_visible(): void

@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use App\Models\PosTerminal;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveDesktopTerminal
@@ -14,7 +13,10 @@ class ResolveDesktopTerminal
     {
         $machineId = $request->input('machine_id');
         $clientId = $request->input('client_id');
-        $bearerToken = $request->bearerToken();
+
+        if (! is_string($machineId) || ! is_string($clientId)) {
+            return $next($request);
+        }
 
         $terminal = PosTerminal::query()
             ->where('machine_id', $machineId)
@@ -22,20 +24,7 @@ class ResolveDesktopTerminal
             ->where('is_active', true)
             ->first();
 
-        if (
-            ! $terminal
-            || ($bearerToken && (
-                ! $terminal->api_token_hash
-                || ! Hash::check($bearerToken, $terminal->api_token_hash)
-            ))
-        ) {
-            if ($bearerToken) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terminal credentials are invalid or the terminal is not registered.',
-                ], 401);
-            }
-
+        if (! $terminal) {
             return $next($request);
         }
 

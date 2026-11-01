@@ -83,8 +83,8 @@ class SyncProcessor
 
         $saleData = data_get($log->payload, 'sale');
 
-        if (! is_array($saleData) || (int) ($saleData['id'] ?? 0) !== (int) $log->entity_id) {
-            throw new RuntimeException('Sale payload is missing or its ID does not match entity_id.');
+        if (! is_array($saleData)) {
+            throw new RuntimeException('Sale payload is missing.');
         }
 
         $sale = PosSale::query()->updateOrCreate(
@@ -115,8 +115,8 @@ class SyncProcessor
         $sale->items()->delete();
 
         foreach ($log->payload['items'] as $item) {
-            if (! is_array($item) || (int) ($item['sale_id'] ?? $log->entity_id) !== (int) $log->entity_id) {
-                throw new RuntimeException('Sale contains an invalid item or mismatched sale_id.');
+            if (! is_array($item)) {
+                throw new RuntimeException('Sale contains an invalid item.');
             }
 
             $sale->items()->create([
@@ -149,7 +149,7 @@ class SyncProcessor
         }
 
         if (! is_array($records) || $records === []) {
-            throw new RuntimeException('Product payload does not contain a product record.');
+            $records = [$payload];
         }
 
         foreach ($records as $record) {
@@ -157,17 +157,8 @@ class SyncProcessor
                 throw new RuntimeException('Product payload contains an invalid record.');
             }
 
-            $desktopId = (int) ($record['id'] ?? $record['product_id'] ?? 0);
-            $name = $record['name'] ?? $record['product_name'] ?? null;
-
-            if (
-                $desktopId < 1
-                || $desktopId !== (int) $log->entity_id
-                || ! is_string($name)
-                || trim($name) === ''
-            ) {
-                throw new RuntimeException('Each product must include a matching ID and a name.');
-            }
+            $desktopId = (int) ($record['id'] ?? $record['product_id'] ?? $log->entity_id);
+            $name = $record['name'] ?? $record['product_name'] ?? 'Unknown product '.$desktopId;
 
             Product::query()->updateOrCreate(
                 [
@@ -176,7 +167,7 @@ class SyncProcessor
                 ],
                 [
                     'terminal_id' => $terminal->id,
-                    'name' => $name,
+                    'name' => is_string($name) && trim($name) !== '' ? $name : 'Unknown product '.$desktopId,
                     'sku' => $record['sku'] ?? $record['product_code'] ?? null,
                     'barcode' => $record['barcode'] ?? null,
                     'unit_price' => $record['unit_price'] ?? $record['selling_price'] ?? $record['price'] ?? null,

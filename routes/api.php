@@ -5,5 +5,5 @@ use App\Http\Middleware\ResolveDesktopTerminal;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/desktop-pos/sync', DesktopPosSyncController::class)
-    ->middleware([ResolveDesktopTerminal::class, 'throttle:120,1'])
+    ->middleware(['throttle:120,1', ResolveDesktopTerminal::class])
     ->name('desktop-pos.sync');

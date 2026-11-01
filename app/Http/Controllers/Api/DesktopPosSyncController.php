@@ -44,12 +44,8 @@ class DesktopPosSyncController extends Controller
 
         if ($validated['entity_type'] === 'sale' && $validated['operation'] !== 'delete') {
             $request->validate([
-                'payload.sale.id' => ['required', 'integer', 'min:1'],
+                'payload.sale' => ['required', 'array'],
                 'payload.items' => ['required', 'array'],
-                'payload.items.*.product_name' => ['required', 'string', 'max:255'],
-                'payload.items.*.quantity' => ['required', 'numeric', 'min:0'],
-                'payload.items.*.unit_price' => ['required', 'numeric', 'min:0'],
-                'payload.items.*.line_total' => ['required', 'numeric', 'min:0'],
             ]);
         }
 
@@ -100,9 +96,15 @@ class DesktopPosSyncController extends Controller
             $syncLog = $processor->process($syncLog);
         }
 
+        $message = match ($syncLog->status) {
+            'success' => 'Desktop POS sync request imported successfully.',
+            'pending' => 'Sync request stored as pending until the machine and client ID are registered.',
+            default => 'Sync request stored but not imported; review its synchronization status.',
+        };
+
         return response()->json([
             'success' => true,
-            'message' => 'Desktop POS sync request stored successfully.',
+            'message' => $message,
             'data' => [
                 'sync_id' => $syncLog->id,
                 'client_id' => $syncLog->client_id,
