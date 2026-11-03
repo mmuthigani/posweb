@@ -140,6 +140,16 @@ class PosController extends Controller
         $user = Auth::user();
 
         $syncLogs = DesktopPosSyncLog::query()
+            ->select([
+                'id',
+                'machine_id',
+                'entity_type',
+                'entity_id',
+                'operation',
+                'status',
+                'received_at',
+                'processed_at',
+            ])
             ->whereIn('machine_id', function ($query) use ($user) {
 
                 $query->select('machine_id')
