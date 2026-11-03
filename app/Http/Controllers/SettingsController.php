@@ -15,6 +15,11 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
+    public function appearance(): View
+    {
+        return view('settings.appearance');
+    }
+
     public function editBusiness(): View
     {
         return view('settings.business', ['business' => Auth::user()->business]);

@@ -47,6 +47,7 @@ Route::middleware(['auth', EnsureActiveBusiness::class])->group(function () {
     Route::get('/account/password', [AuthController::class, 'editPassword'])->name('account.password.edit');
     Route::put('/account/password', [AuthController::class, 'changePassword'])
         ->middleware('throttle:5,1')->name('account.password.update');
+    Route::get('/account/appearance', [SettingsController::class, 'appearance'])->name('account.appearance');
 
     Route::get('/sales', [PosController::class, 'sales'])->name('sales.index');
     Route::get('/sales/export', [PosController::class, 'exportSales'])->name('sales.export');

@@ -17,7 +17,141 @@
             },
         };
     </script>
-    <!-- @vite('resources/js/app.js') -->
+    <script>
+        window.kikimoColorThemes = ['green', 'blue', 'violet', 'amber', 'rose', 'teal', 'indigo', 'red', 'slate', 'cyan'];
+        const savedColorTheme = localStorage.getItem('kikimo-color-theme');
+        document.documentElement.dataset.colorTheme = window.kikimoColorThemes.includes(savedColorTheme) ? savedColorTheme : 'green';
+    </script>
+    <style>
+        html[data-color-theme="blue"] [class~="bg-[#01553d]"] { background-color: #2563eb !important; }
+        html[data-color-theme="blue"] [class~="text-[#01553d]"],
+        html[data-color-theme="blue"] [class~="hover:text-[#01553d]"]:hover { color: #2563eb !important; }
+        html[data-color-theme="blue"] [class~="bg-[#0a2a1d]"],
+        html[data-color-theme="blue"] [class~="hover:bg-[#0a2a1d]"]:hover { background-color: #102a43 !important; }
+        html[data-color-theme="blue"] [class~="text-[#0a2a1d]"] { color: #102a43 !important; }
+        html[data-color-theme="blue"] [class~="bg-[#144832]"] { background-color: #1d4f73 !important; }
+        html[data-color-theme="blue"] [class~="bg-[#79c143]"] { background-color: #60a5fa !important; }
+        html[data-color-theme="blue"] [class~="text-[#a6e06f]"],
+        html[data-color-theme="blue"] [class~="text-[#b8ed8c]"] { color: #bfdbfe !important; }
+        html[data-color-theme="blue"] [class~="focus:border-[#2b805b]"]:focus { border-color: #3b82f6 !important; }
+
+        html[data-color-theme="violet"] [class~="bg-[#01553d]"] { background-color: #7c3aed !important; }
+        html[data-color-theme="violet"] [class~="text-[#01553d]"],
+        html[data-color-theme="violet"] [class~="hover:text-[#01553d]"]:hover { color: #7c3aed !important; }
+        html[data-color-theme="violet"] [class~="bg-[#0a2a1d]"],
+        html[data-color-theme="violet"] [class~="hover:bg-[#0a2a1d]"]:hover { background-color: #241044 !important; }
+        html[data-color-theme="violet"] [class~="text-[#0a2a1d]"] { color: #241044 !important; }
+        html[data-color-theme="violet"] [class~="bg-[#144832]"] { background-color: #4c1d95 !important; }
+        html[data-color-theme="violet"] [class~="bg-[#79c143]"] { background-color: #c4b5fd !important; }
+        html[data-color-theme="violet"] [class~="text-[#a6e06f]"],
+        html[data-color-theme="violet"] [class~="text-[#b8ed8c]"] { color: #ddd6fe !important; }
+        html[data-color-theme="violet"] [class~="focus:border-[#2b805b]"]:focus { border-color: #8b5cf6 !important; }
+
+        html[data-color-theme="amber"] [class~="bg-[#01553d]"] { background-color: #b45309 !important; }
+        html[data-color-theme="amber"] [class~="text-[#01553d]"],
+        html[data-color-theme="amber"] [class~="hover:text-[#01553d]"]:hover { color: #b45309 !important; }
+        html[data-color-theme="amber"] [class~="bg-[#0a2a1d]"],
+        html[data-color-theme="amber"] [class~="hover:bg-[#0a2a1d]"]:hover { background-color: #3a1f0c !important; }
+        html[data-color-theme="amber"] [class~="text-[#0a2a1d]"] { color: #3a1f0c !important; }
+        html[data-color-theme="amber"] [class~="bg-[#144832]"] { background-color: #854d0e !important; }
+        html[data-color-theme="amber"] [class~="bg-[#79c143]"] { background-color: #fbbf24 !important; }
+        html[data-color-theme="amber"] [class~="text-[#a6e06f]"],
+        html[data-color-theme="amber"] [class~="text-[#b8ed8c]"] { color: #fde68a !important; }
+        html[data-color-theme="amber"] [class~="focus:border-[#2b805b]"]:focus { border-color: #d97706 !important; }
+
+        html[data-color-theme="blue"] #dashboard-content [class~="from-[#01553d]"] { --tw-gradient-from: #2563eb var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="via-[#014532]"],
+        html[data-color-theme="blue"] #dashboard-content [class~="via-[#046a4c]"] { --tw-gradient-via: #1d4f73 var(--tw-gradient-via-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="to-[#0a2a1d]"] { --tw-gradient-to: #102a43 var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="from-[#79c143]"] { --tw-gradient-from: #60a5fa var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="to-[#79c143]"] { --tw-gradient-to: #60a5fa var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="bg-emerald-50"],
+        html[data-color-theme="blue"] #dashboard-content [class~="from-emerald-50"] { background-color: #eff6ff !important; --tw-gradient-from: #eff6ff var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="bg-emerald-100"],
+        html[data-color-theme="blue"] #dashboard-content [class~="to-emerald-100"] { background-color: #dbeafe !important; --tw-gradient-to: #dbeafe var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="from-emerald-100"] { --tw-gradient-from: #dbeafe var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="to-emerald-200"] { --tw-gradient-to: #bfdbfe var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="blue"] #dashboard-content [class~="hover:bg-emerald-50/40"]:hover { background-color: rgb(239 246 255 / 40%) !important; }
+
+        html[data-color-theme="violet"] #dashboard-content [class~="from-[#01553d]"] { --tw-gradient-from: #7c3aed var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="via-[#014532]"],
+        html[data-color-theme="violet"] #dashboard-content [class~="via-[#046a4c]"] { --tw-gradient-via: #4c1d95 var(--tw-gradient-via-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="to-[#0a2a1d]"] { --tw-gradient-to: #241044 var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="from-[#79c143]"] { --tw-gradient-from: #c4b5fd var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="to-[#79c143]"] { --tw-gradient-to: #c4b5fd var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="bg-emerald-50"],
+        html[data-color-theme="violet"] #dashboard-content [class~="from-emerald-50"] { background-color: #f5f3ff !important; --tw-gradient-from: #f5f3ff var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="bg-emerald-100"],
+        html[data-color-theme="violet"] #dashboard-content [class~="to-emerald-100"] { background-color: #ede9fe !important; --tw-gradient-to: #ede9fe var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="from-emerald-100"] { --tw-gradient-from: #ede9fe var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="to-emerald-200"] { --tw-gradient-to: #ddd6fe var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="violet"] #dashboard-content [class~="hover:bg-emerald-50/40"]:hover { background-color: rgb(245 243 255 / 40%) !important; }
+
+        html[data-color-theme="amber"] #dashboard-content [class~="from-[#01553d]"] { --tw-gradient-from: #b45309 var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="via-[#014532]"],
+        html[data-color-theme="amber"] #dashboard-content [class~="via-[#046a4c]"] { --tw-gradient-via: #854d0e var(--tw-gradient-via-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="to-[#0a2a1d]"] { --tw-gradient-to: #3a1f0c var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="from-[#79c143]"] { --tw-gradient-from: #fbbf24 var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="to-[#79c143]"] { --tw-gradient-to: #fbbf24 var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="bg-emerald-50"],
+        html[data-color-theme="amber"] #dashboard-content [class~="from-emerald-50"] { background-color: #fffbeb !important; --tw-gradient-from: #fffbeb var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="bg-emerald-100"],
+        html[data-color-theme="amber"] #dashboard-content [class~="to-emerald-100"] { background-color: #fef3c7 !important; --tw-gradient-to: #fef3c7 var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="from-emerald-100"] { --tw-gradient-from: #fef3c7 var(--tw-gradient-from-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="to-emerald-200"] { --tw-gradient-to: #fde68a var(--tw-gradient-to-position) !important; }
+        html[data-color-theme="amber"] #dashboard-content [class~="hover:bg-emerald-50/40"]:hover { background-color: rgb(255 251 235 / 40%) !important; }
+
+        [data-color-theme-choice][aria-pressed="true"] { border-color: #01553d; box-shadow: 0 0 0 2px rgb(1 85 61 / 15%); }
+        html[data-color-theme="blue"] [data-color-theme-choice][aria-pressed="true"] { border-color: #2563eb; box-shadow: 0 0 0 2px rgb(37 99 235 / 15%); }
+        html[data-color-theme="violet"] [data-color-theme-choice][aria-pressed="true"] { border-color: #7c3aed; box-shadow: 0 0 0 2px rgb(124 58 237 / 15%); }
+        html[data-color-theme="amber"] [data-color-theme-choice][aria-pressed="true"] { border-color: #b45309; box-shadow: 0 0 0 2px rgb(180 83 9 / 15%); }
+
+        html[data-color-theme="green"] { --theme-primary: #01553d; --theme-secondary: #79c143; --theme-dark: #0a2a1d; --theme-mid: #046a4c; --theme-soft-50: #ecfdf5; --theme-soft-100: #d1fae5; --theme-soft-200: #a7f3d0; --theme-secondary-light: #a6e06f; --theme-secondary-lighter: #b8ed8c; }
+        html[data-color-theme="blue"] { --theme-primary: #2563eb; --theme-secondary: #60a5fa; --theme-dark: #102a43; --theme-mid: #1d4f73; --theme-soft-50: #eff6ff; --theme-soft-100: #dbeafe; --theme-soft-200: #bfdbfe; --theme-secondary-light: #bfdbfe; --theme-secondary-lighter: #dbeafe; }
+        html[data-color-theme="violet"] { --theme-primary: #7c3aed; --theme-secondary: #c4b5fd; --theme-dark: #241044; --theme-mid: #4c1d95; --theme-soft-50: #f5f3ff; --theme-soft-100: #ede9fe; --theme-soft-200: #ddd6fe; --theme-secondary-light: #ddd6fe; --theme-secondary-lighter: #ede9fe; }
+        html[data-color-theme="amber"] { --theme-primary: #b45309; --theme-secondary: #fbbf24; --theme-dark: #3a1f0c; --theme-mid: #854d0e; --theme-soft-50: #fffbeb; --theme-soft-100: #fef3c7; --theme-soft-200: #fde68a; --theme-secondary-light: #fde68a; --theme-secondary-lighter: #fef3c7; }
+        html[data-color-theme="rose"] { --theme-primary: #e11d48; --theme-secondary: #fb7185; --theme-dark: #4c0519; --theme-mid: #9f1239; --theme-soft-50: #fff1f2; --theme-soft-100: #ffe4e6; --theme-soft-200: #fecdd3; --theme-secondary-light: #fda4af; --theme-secondary-lighter: #fecdd3; }
+        html[data-color-theme="teal"] { --theme-primary: #0f766e; --theme-secondary: #2dd4bf; --theme-dark: #042f2e; --theme-mid: #115e59; --theme-soft-50: #f0fdfa; --theme-soft-100: #ccfbf1; --theme-soft-200: #99f6e4; --theme-secondary-light: #5eead4; --theme-secondary-lighter: #99f6e4; }
+        html[data-color-theme="indigo"] { --theme-primary: #4f46e5; --theme-secondary: #818cf8; --theme-dark: #1e1b4b; --theme-mid: #3730a3; --theme-soft-50: #eef2ff; --theme-soft-100: #e0e7ff; --theme-soft-200: #c7d2fe; --theme-secondary-light: #a5b4fc; --theme-secondary-lighter: #c7d2fe; }
+        html[data-color-theme="red"] { --theme-primary: #dc2626; --theme-secondary: #f87171; --theme-dark: #450a0a; --theme-mid: #991b1b; --theme-soft-50: #fef2f2; --theme-soft-100: #fee2e2; --theme-soft-200: #fecaca; --theme-secondary-light: #fca5a5; --theme-secondary-lighter: #fecaca; }
+        html[data-color-theme="slate"] { --theme-primary: #475569; --theme-secondary: #94a3b8; --theme-dark: #0f172a; --theme-mid: #334155; --theme-soft-50: #f8fafc; --theme-soft-100: #f1f5f9; --theme-soft-200: #e2e8f0; --theme-secondary-light: #cbd5e1; --theme-secondary-lighter: #e2e8f0; }
+        html[data-color-theme="cyan"] { --theme-primary: #0891b2; --theme-secondary: #22d3ee; --theme-dark: #083344; --theme-mid: #0e7490; --theme-soft-50: #ecfeff; --theme-soft-100: #cffafe; --theme-soft-200: #a5f3fc; --theme-secondary-light: #67e8f9; --theme-secondary-lighter: #a5f3fc; }
+
+        html[data-color-theme] [class~="bg-[#01553d]"] { background-color: var(--theme-primary) !important; }
+        html[data-color-theme] [class~="text-[#01553d]"],
+        html[data-color-theme] [class~="hover:text-[#01553d]"]:hover { color: var(--theme-primary) !important; }
+        html[data-color-theme] [class~="bg-[#0a2a1d]"],
+        html[data-color-theme] [class~="hover:bg-[#0a2a1d]"]:hover { background-color: var(--theme-dark) !important; }
+        html[data-color-theme] [class~="text-[#0a2a1d]"] { color: var(--theme-dark) !important; }
+        html[data-color-theme] [class~="bg-[#144832]"] { background-color: var(--theme-mid) !important; }
+        html[data-color-theme] [class~="bg-[#79c143]"] { background-color: var(--theme-secondary) !important; }
+        html[data-color-theme] [class~="text-[#a6e06f]"] { color: var(--theme-secondary-light) !important; }
+        html[data-color-theme] [class~="text-[#b8ed8c]"] { color: var(--theme-secondary-lighter) !important; }
+        html[data-color-theme] [class~="focus:border-[#2b805b]"]:focus { border-color: var(--theme-primary) !important; }
+        html[data-color-theme] [data-color-theme-choice][aria-pressed="true"] { border-color: var(--theme-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 15%, transparent); }
+
+        html[data-color-theme] .theme-primary-text { color: var(--theme-primary) !important; }
+        html[data-color-theme] .theme-gradient-hero { background-image: linear-gradient(to right, var(--theme-primary), var(--theme-mid), var(--theme-dark)) !important; }
+        html[data-color-theme] .theme-gradient-featured { background-image: linear-gradient(to bottom right, var(--theme-primary), var(--theme-mid), var(--theme-dark)) !important; }
+        html[data-color-theme] .theme-gradient-accent { background-image: linear-gradient(to bottom right, var(--theme-primary), var(--theme-secondary)) !important; }
+        html[data-color-theme] .theme-gradient-chart { background-image: linear-gradient(to top, var(--theme-primary), var(--theme-secondary)) !important; }
+        html[data-color-theme] .theme-gradient-horizontal { background-image: linear-gradient(to right, var(--theme-primary), var(--theme-secondary)) !important; }
+        html[data-color-theme] #dashboard-content .group:hover .theme-gradient-chart-hover { background-image: linear-gradient(to top, var(--theme-primary), var(--theme-secondary)) !important; }
+
+        html[data-color-theme] #dashboard-content [class~="from-[#01553d]"] { --tw-gradient-from: var(--theme-primary) var(--tw-gradient-from-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="via-[#014532]"],
+        html[data-color-theme] #dashboard-content [class~="via-[#046a4c]"] { --tw-gradient-via: var(--theme-mid) var(--tw-gradient-via-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="to-[#0a2a1d]"] { --tw-gradient-to: var(--theme-dark) var(--tw-gradient-to-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="from-[#79c143]"] { --tw-gradient-from: var(--theme-secondary) var(--tw-gradient-from-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="to-[#79c143]"] { --tw-gradient-to: var(--theme-secondary) var(--tw-gradient-to-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="bg-emerald-50"],
+        html[data-color-theme] #dashboard-content [class~="from-emerald-50"] { background-color: var(--theme-soft-50) !important; --tw-gradient-from: var(--theme-soft-50) var(--tw-gradient-from-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="bg-emerald-100"],
+        html[data-color-theme] #dashboard-content [class~="to-emerald-100"] { background-color: var(--theme-soft-100) !important; --tw-gradient-to: var(--theme-soft-100) var(--tw-gradient-to-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="from-emerald-100"] { --tw-gradient-from: var(--theme-soft-100) var(--tw-gradient-from-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="to-emerald-200"] { --tw-gradient-to: var(--theme-soft-200) var(--tw-gradient-to-position) !important; }
+        html[data-color-theme] #dashboard-content [class~="hover:bg-emerald-50/40"]:hover { background-color: color-mix(in srgb, var(--theme-soft-50) 40%, transparent) !important; }
+    </style>
 </head>
 <body class="min-h-full text-slate-800 antialiased">
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
@@ -69,9 +203,13 @@
                 </a>
             @endif
             <div class="px-3 pb-1 pt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/40">Account</div>
-            <a href="{{ route('account.password.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
+            <a href="{{ route('account.password.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.password.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
                 <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 5v2"/></svg></span>
                 Change password
+            </a>
+            <a href="{{ route('account.appearance') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.appearance') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18m0-9h9"/></svg></span>
+                Appearance
             </a>
         </nav>
         <div class="border-t border-white/10 p-4">
@@ -104,5 +242,26 @@
         </main>
         <footer class="px-8 pb-6 text-center text-xs text-slate-400">KIKIMO POS · Secure business management</footer>
     </div>
+    <script>
+        document.querySelectorAll('[data-color-theme-choice]').forEach((button) => {
+            button.setAttribute('aria-pressed', String(button.dataset.colorThemeChoice === document.documentElement.dataset.colorTheme));
+            button.addEventListener('click', () => {
+                const theme = button.dataset.colorThemeChoice;
+                if (!window.kikimoColorThemes.includes(theme)) {
+                    return;
+                }
+
+                localStorage.setItem('kikimo-color-theme', theme);
+                document.documentElement.dataset.colorTheme = theme;
+                document.querySelectorAll('[data-color-theme-choice]').forEach((choice) => {
+                    choice.setAttribute('aria-pressed', String(choice === button));
+                });
+                const status = document.getElementById('color-theme-status');
+                if (status) {
+                    status.textContent = `Theme changed to ${button.dataset.colorThemeLabel}.`;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
