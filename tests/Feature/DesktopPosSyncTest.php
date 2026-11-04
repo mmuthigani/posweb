@@ -26,6 +26,8 @@ class DesktopPosSyncTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.status', 'success');
 
+        $sale = PosSale::query()->where('desktop_sale_id', 19)->firstOrFail();
+        $this->assertSame(route('sales.receipt', $sale), $first->json('data.receipt_url'));
         $this->assertDatabaseCount('pos_sales', 1);
         $this->assertDatabaseCount('pos_sale_items', 1);
         $this->assertDatabaseHas('desktop_pos_sync_logs', [
@@ -38,7 +40,48 @@ class DesktopPosSyncTest extends TestCase
         $duplicate->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('message', 'This synchronization request has already been received.');
+        $this->assertSame($first->json('data.receipt_url'), $duplicate->json('data.receipt_url'));
         $this->assertSame($first->json('data.sync_id'), $duplicate->json('data.sync_id'));
+        $this->assertDatabaseCount('pos_sales', 1);
+    }
+
+    public function test_saved_sale_receipt_displays_sale_data_and_handles_missing_store_details(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $response = $this->withHeaders(['Idempotency-Key' => 'receipt-sale-19'])
+            ->postJson('/api/desktop-pos/sync', $this->salePayload())
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $sale = PosSale::query()->with('business')->where('desktop_sale_id', 19)->firstOrFail();
+        $this->assertSame(route('sales.receipt', $sale), $response->json('data.receipt_url'));
+        $user = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'receipt-owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->get($response->json('data.receipt_url'))
+            ->assertOk()
+            ->assertSee('Kikimo Test Store')
+            ->assertSee('SALES RECEIPT')
+            ->assertSee('KDP-TEST-19')
+            ->assertSee('Test cashier')
+            ->assertSee('Sample item')
+            ->assertSee('Unit price')
+            ->assertSee('Qty')
+            ->assertSee('KES 1,000.00')
+            ->assertSee('Discount / offer savings')
+            ->assertSee('KES 120.00')
+            ->assertSee('KES 880.00')
+            ->assertSee('Cash')
+            ->assertSee('Amount paid')
+            ->assertSee('Change due')
+            ->assertSee('KES 0.00')
+            ->assertSee('Print receipt');
+
         $this->assertDatabaseCount('pos_sales', 1);
     }
 
@@ -147,7 +190,8 @@ class DesktopPosSyncTest extends TestCase
         $this->withHeaders(['Idempotency-Key' => 'unregistered-request'])
             ->postJson('/api/desktop-pos/sync', $payload)
             ->assertCreated()
-            ->assertJsonPath('data.status', 'pending');
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.receipt_url', null);
 
         $this->assertDatabaseHas('desktop_pos_sync_logs', [
             'machine_id' => 'unregistered-machine',

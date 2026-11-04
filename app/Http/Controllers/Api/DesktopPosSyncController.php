@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DesktopPosSyncLog;
+use App\Models\PosSale;
 use App\Models\PosTerminal;
 use App\Services\SyncProcessor;
 use Illuminate\Database\QueryException;
@@ -113,6 +114,7 @@ class DesktopPosSyncController extends Controller
                 'entity_id' => $syncLog->entity_id,
                 'operation' => $syncLog->operation,
                 'status' => $syncLog->status,
+                'receipt_url' => $this->receiptUrl($syncLog),
                 'received_at' => $syncLog->received_at,
             ],
         ], 201);
@@ -126,9 +128,24 @@ class DesktopPosSyncController extends Controller
             'data' => [
                 'sync_id' => $syncLog->id,
                 'status' => $syncLog->status,
+                'receipt_url' => $this->receiptUrl($syncLog),
                 'received_at' => $syncLog->received_at,
             ],
         ]);
+    }
+
+    private function receiptUrl(DesktopPosSyncLog $syncLog): ?string
+    {
+        if ($syncLog->status !== 'success' || $syncLog->entity_type !== 'sale' || $syncLog->operation === 'delete') {
+            return null;
+        }
+
+        $sale = PosSale::query()
+            ->where('machine_id', $syncLog->machine_id)
+            ->where('desktop_sale_id', $syncLog->entity_id)
+            ->first();
+
+        return $sale ? route('sales.receipt', $sale) : null;
     }
 
     private function requestMatchesLog(array $validated, DesktopPosSyncLog $syncLog): bool
