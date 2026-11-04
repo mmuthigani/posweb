@@ -243,6 +243,56 @@
         <footer class="px-8 pb-6 text-center text-xs text-slate-400">KIKIMO POS · Secure business management</footer>
     </div>
     <script>
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const appShell = document.getElementById('app-shell');
+        const desktopNavigation = window.matchMedia('(min-width: 1024px)');
+
+        const closeSidebar = () => {
+            sidebar?.classList.add('-translate-x-full');
+            backdrop?.classList.add('hidden');
+            sidebarToggle?.setAttribute('aria-expanded', 'false');
+        };
+
+        sidebarToggle?.setAttribute(
+            'aria-expanded',
+            String(desktopNavigation.matches && !sidebar?.classList.contains('lg:-translate-x-full')),
+        );
+
+        sidebarToggle?.addEventListener('click', () => {
+            if (desktopNavigation.matches) {
+                const collapsed = sidebar?.classList.contains('lg:-translate-x-full') ?? false;
+                sidebar?.classList.toggle('lg:-translate-x-full', !collapsed);
+                sidebar?.classList.toggle('lg:translate-x-0', collapsed);
+                appShell?.classList.toggle('lg:pl-0', !collapsed);
+                appShell?.classList.toggle('lg:pl-64', collapsed);
+                sidebarToggle.setAttribute('aria-expanded', String(collapsed));
+                return;
+            }
+
+            const opening = sidebar?.classList.contains('-translate-x-full') ?? false;
+            sidebar?.classList.toggle('-translate-x-full', !opening);
+            backdrop?.classList.toggle('hidden', !opening);
+            sidebarToggle.setAttribute('aria-expanded', String(opening));
+        });
+
+        backdrop?.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !desktopNavigation.matches) {
+                closeSidebar();
+            }
+        });
+        desktopNavigation.addEventListener('change', (event) => {
+            sidebarToggle?.setAttribute(
+                'aria-expanded',
+                String(event.matches && !sidebar?.classList.contains('lg:-translate-x-full')),
+            );
+            if (event.matches) {
+                backdrop?.classList.add('hidden');
+            }
+        });
+
         document.querySelectorAll('[data-color-theme-choice]').forEach((button) => {
             button.setAttribute('aria-pressed', String(button.dataset.colorThemeChoice === document.documentElement.dataset.colorTheme));
             button.addEventListener('click', () => {
