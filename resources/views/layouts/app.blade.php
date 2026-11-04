@@ -151,6 +151,78 @@
         html[data-color-theme] #dashboard-content [class~="from-emerald-100"] { --tw-gradient-from: var(--theme-soft-100) var(--tw-gradient-from-position) !important; }
         html[data-color-theme] #dashboard-content [class~="to-emerald-200"] { --tw-gradient-to: var(--theme-soft-200) var(--tw-gradient-to-position) !important; }
         html[data-color-theme] #dashboard-content [class~="hover:bg-emerald-50/40"]:hover { background-color: color-mix(in srgb, var(--theme-soft-50) 40%, transparent) !important; }
+
+        @media (max-width: 640px) {
+            .responsive-card-table {
+                display: block;
+                width: 100%;
+                min-width: 0 !important;
+            }
+
+            .responsive-card-table thead {
+                display: none;
+            }
+
+            .responsive-card-table tbody {
+                display: block;
+                width: 100%;
+            }
+
+            .responsive-card-table tbody tr:not(.responsive-table-empty) {
+                display: block;
+                margin: 0 0 0.75rem;
+                padding: 0 0.875rem;
+                border: 1px solid #e2e8f0;
+                border-bottom: 1px solid #e2e8f0 !important;
+                border-radius: 1rem;
+                background: white;
+            }
+
+            .responsive-card-table tbody td:not([colspan]) {
+                display: flex;
+                width: 100%;
+                max-width: none;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #f1f5f9;
+                text-align: right;
+                overflow-wrap: anywhere;
+            }
+
+            .responsive-card-table tbody td[data-label="Machine"] {
+                overflow: visible;
+                text-overflow: clip;
+                white-space: normal;
+            }
+
+            .responsive-card-table tbody td:not([colspan])::before {
+                flex: 0 0 auto;
+                color: #94a3b8;
+                content: attr(data-label);
+                font-size: 0.65rem;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                text-align: left;
+                text-transform: uppercase;
+            }
+
+            .responsive-card-table tbody td:last-child {
+                border-bottom: 0;
+            }
+
+            .responsive-card-table tbody tr.responsive-table-empty {
+                display: block;
+                border: 0;
+            }
+
+            .responsive-card-table tbody tr.responsive-table-empty td {
+                display: block;
+                padding: 2rem 0.5rem;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body class="min-h-full text-slate-800 antialiased">

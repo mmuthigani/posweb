@@ -216,7 +216,7 @@
             <a href="{{ route('sales.index') }}" class="rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-semibold theme-primary-text transition hover:bg-emerald-100">All sales</a>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[650px] text-left text-sm">
+            <table class="responsive-card-table w-full min-w-[650px] text-left text-sm">
                 <thead class="border-y border-slate-100 bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-400">
                     <tr>
                         <th class="px-6 py-3 font-semibold">Receipt</th>
@@ -229,7 +229,7 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($recentSales as $sale)
                         <tr class="transition hover:bg-emerald-50/40">
-                            <td class="px-6 py-3.5">
+                            <td data-label="Receipt" class="px-6 py-3.5">
                                 <a href="{{ route('sales.show', $sale) }}" class="inline-flex items-center gap-2 font-semibold theme-primary-text hover:underline">
                                     <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 theme-primary-text">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6"/></svg>
@@ -237,7 +237,7 @@
                                     {{ $sale->receipt_no ?: '#'.$sale->desktop_sale_id }}
                                 </a>
                             </td>
-                            <td class="px-6 py-3.5">
+                            <td data-label="Cashier" class="px-6 py-3.5">
                                 @if($sale->cashier_name)
                                     <span class="inline-flex items-center gap-2 text-slate-600">
                                         <span class="grid h-7 w-7 place-items-center rounded-full theme-gradient-accent text-[11px] font-semibold text-white">{{ strtoupper(mb_substr($sale->cashier_name, 0, 1)) }}</span>
@@ -247,18 +247,18 @@
                                     <span class="text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-3.5">
+                            <td data-label="Payment" class="px-6 py-3.5">
                                 @if($sale->payment_method)
                                     <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $sale->payment_method }}</span>
                                 @else
                                     <span class="text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-3.5 text-right font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $sale->total, 2) }}</td>
-                            <td class="px-6 py-3.5 text-slate-500">{{ $sale->sold_at?->format('H:i') ?: '—' }}</td>
+                            <td data-label="Total" class="px-6 py-3.5 text-right font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $sale->total, 2) }}</td>
+                            <td data-label="Time" class="px-6 py-3.5 text-slate-500">{{ $sale->sold_at?->format('H:i') ?: '—' }}</td>
                         </tr>
                     @empty
-                        <tr>
+                        <tr class="responsive-table-empty">
                             <td colspan="5" class="px-6 py-14 text-center">
                                 <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 text-slate-300">
                                     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6"/></svg>
