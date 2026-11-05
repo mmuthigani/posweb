@@ -73,7 +73,7 @@ class DesktopPosSyncController extends Controller
                 throw $exception;
             }
 
-            if (! $this->requestMatchesLog($validated, $existing)) {
+            if (! $this->requestIdentityMatchesLog($validated, $existing)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This Idempotency-Key was already used for a different synchronization request.',
@@ -84,10 +84,22 @@ class DesktopPosSyncController extends Controller
                 ], 409);
             }
 
-            if ($terminal && $existing->status !== 'success') {
-                $syncLog = $processor->process($existing);
+            if ($this->requestMatchesLog($validated, $existing)) {
+                if ($terminal && $existing->status !== 'success') {
+                    $syncLog = $processor->process($existing);
+                } else {
+                    $syncLog = $existing;
+                }
             } else {
-                $syncLog = $existing;
+                $existing->forceFill([
+                    'payload' => $validated['payload'],
+                    'status' => 'pending',
+                    'error_message' => $terminal ? null : self::UNREGISTERED_TERMINAL.' Register this exact machine_id and client_id to a business before importing this request.',
+                    'received_at' => now(),
+                    'processed_at' => null,
+                ])->save();
+
+                $syncLog = $terminal ? $processor->process($existing) : $existing;
             }
 
             return $this->duplicateResponse($syncLog);
@@ -150,12 +162,17 @@ class DesktopPosSyncController extends Controller
 
     private function requestMatchesLog(array $validated, DesktopPosSyncLog $syncLog): bool
     {
+        return $this->requestIdentityMatchesLog($validated, $syncLog)
+            && $this->normalizePayload($syncLog->payload) === $this->normalizePayload($validated['payload']);
+    }
+
+    private function requestIdentityMatchesLog(array $validated, DesktopPosSyncLog $syncLog): bool
+    {
         return $syncLog->client_id === $validated['client_id']
             && $syncLog->machine_id === $validated['machine_id']
             && $syncLog->entity_type === $validated['entity_type']
             && (int) $syncLog->entity_id === (int) $validated['entity_id']
-            && $syncLog->operation === $validated['operation']
-            && $this->normalizePayload($syncLog->payload) === $this->normalizePayload($validated['payload']);
+            && $syncLog->operation === $validated['operation'];
     }
 
     private function normalizePayload(array $payload): array

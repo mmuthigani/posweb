@@ -124,7 +124,7 @@ class DesktopPosSyncTest extends TestCase
         ]);
     }
 
-    public function test_reusing_an_idempotency_key_for_a_different_payload_is_rejected(): void
+    public function test_reusing_an_idempotency_key_for_the_same_sale_updates_its_data(): void
     {
         [$terminal] = $this->registeredTerminal();
         $headers = ['Idempotency-Key' => 'same-key'];
@@ -137,14 +137,16 @@ class DesktopPosSyncTest extends TestCase
         $changedPayload['payload']['sale']['total'] = 999;
 
         $this->withHeaders($headers)->postJson('/api/desktop-pos/sync', $changedPayload)
-            ->assertStatus(409)
-            ->assertJsonPath('success', false);
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'success');
 
         $this->assertDatabaseCount('pos_sales', 1);
+        $this->assertDatabaseCount('desktop_pos_sync_logs', 1);
         $this->assertDatabaseHas('pos_sales', [
             'terminal_id' => $terminal->id,
             'desktop_sale_id' => 19,
-            'total' => 880,
+            'total' => 999,
         ]);
     }
 
