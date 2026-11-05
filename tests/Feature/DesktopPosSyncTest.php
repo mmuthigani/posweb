@@ -45,7 +45,7 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseCount('pos_sales', 1);
     }
 
-    public function test_saved_sale_receipt_displays_sale_data_and_handles_missing_store_details(): void
+    public function test_saved_sale_receipt_displays_sale_data_and_business_email(): void
     {
         [$terminal] = $this->registeredTerminal();
         $response = $this->withHeaders(['Idempotency-Key' => 'receipt-sale-19'])
@@ -53,6 +53,7 @@ class DesktopPosSyncTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.status', 'success');
 
+        $terminal->business->update(['email' => 'store@example.test']);
         $sale = PosSale::query()->with('business')->where('desktop_sale_id', 19)->firstOrFail();
         $this->assertSame(route('sales.receipt', $sale), $response->json('data.receipt_url'));
         $user = $terminal->business->users()->create([
@@ -66,6 +67,7 @@ class DesktopPosSyncTest extends TestCase
         $this->actingAs($user)->get($response->json('data.receipt_url'))
             ->assertOk()
             ->assertSee('Kikimo Test Store')
+            ->assertSee('store@example.test')
             ->assertSee('SALES RECEIPT')
             ->assertSee('KDP-TEST-19')
             ->assertSee('Test cashier')

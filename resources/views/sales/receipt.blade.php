@@ -81,7 +81,7 @@
             letter-spacing: .04em;
             overflow-wrap: anywhere;
         }
-        .store-details { margin-top: 7px; }
+        .store-details { margin-top: 7px; overflow-wrap: anywhere; }
         .heading { margin: 5px 0 0; font-size: 12px; font-weight: 400; letter-spacing: .2em; }
         .rule { margin: 20px 0; border: 0; border-top: 1px dashed #cbd6d0; }
         .metadata, .totals { display: grid; gap: 4px; }
@@ -151,8 +151,9 @@
         <main class="receipt">
             <header class="center">
                 <h1 class="store-name">{{ $sale->business->name }}</h1>
-                @if($sale->business->phone || $sale->business->address)
+                @if($sale->business->email || $sale->business->phone || $sale->business->address)
                     <div class="store-details muted">
+                        @if($sale->business->email)<div>{{ $sale->business->email }}</div>@endif
                         @if($sale->business->phone)<div>{{ $sale->business->phone }}</div>@endif
                         @if($sale->business->address)<div>{{ $sale->business->address }}</div>@endif
                     </div>
