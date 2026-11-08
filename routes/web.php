@@ -22,10 +22,9 @@ Route::get('/clear', function () {
 
 Route::get('/migrate', function () {
 
-    Artisan::call('migrate:fresh', [
-        '--seed' => true,
-    ]);
-
+    // Artisan::call('migrate:fresh', [
+    //     '--seed' => true,
+    // ]);
     return response('✅ Database migrated and seeded successfully.', 200);
 });
 

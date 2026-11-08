@@ -229,8 +229,8 @@
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-[#0a2a1d] text-white transition-transform duration-200 lg:translate-x-0">
         <a href="{{ route('dashboard') }}" class="flex h-[76px] items-center gap-3 border-b border-white/10 px-6">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#79c143] text-lg font-black text-[#0a2a1d]">K</span>
-            <span><span class="block text-sm font-bold tracking-[0.18em]">KIKIMO</span><span class="text-[11px] font-medium tracking-[0.2em] text-emerald-100/60">POS MANAGEMENT</span></span>
+            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#79c143] text-2xl font-black text-[#0a2a1d]">K</span>
+            <span class="min-w-0"><span class="block whitespace-nowrap text-lg font-bold tracking-tight">Kikimo <span class="text-[#79c143]">Dev</span></span><span class="block whitespace-nowrap text-[10px] font-medium tracking-[0.22em] text-[#a6e06f]">DESKTOP POS</span></span>
         </a>
         <div class="mx-4 mt-5 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
             <p class="truncate text-sm font-semibold">{{ auth()->user()->business->name }}</p>

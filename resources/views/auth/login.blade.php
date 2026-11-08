@@ -32,6 +32,7 @@
         html[data-color-theme="slate"] { --login-primary: #475569; --login-secondary: #94a3b8; --login-dark: #0f172a; --login-mid: #334155; --login-highlight: #cbd5e1; }
         html[data-color-theme="cyan"] { --login-primary: #0891b2; --login-secondary: #22d3ee; --login-dark: #083344; --login-mid: #0e7490; --login-highlight: #67e8f9; }
         .login-theme-primary { color: var(--login-primary) !important; }
+        .login-theme-secondary { color: var(--login-secondary) !important; }
         .login-theme-primary-bg { background-color: var(--login-primary) !important; }
         .login-theme-secondary-bg { background-color: var(--login-secondary) !important; }
         .login-theme-dark-bg { background-color: var(--login-dark) !important; }
@@ -48,14 +49,15 @@
         <section class="relative hidden flex-col justify-between overflow-hidden login-theme-dark-bg p-10 text-white md:flex">
             <div class="absolute -right-24 -top-20 h-80 w-80 rounded-full border-[48px] border-white/5"></div>
             <div class="absolute -bottom-28 -left-20 h-80 w-80 rounded-full border-[48px] login-theme-secondary-bg opacity-10"></div>
-            <a href="/" class="relative flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-xl login-theme-secondary-bg text-xl font-black login-theme-dark-text">K</span><span class="font-bold tracking-[0.2em]">KIKIMO POS</span></a>
+            <a href="/" class="relative flex items-center gap-3"><span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl login-theme-secondary-bg text-2xl font-black login-theme-dark-text">K</span><span><span class="block whitespace-nowrap text-lg font-bold tracking-tight">Kikimo <span class="login-theme-secondary">Dev</span></span><span class="mt-0.5 block whitespace-nowrap text-[10px] font-medium tracking-[0.22em] login-theme-highlight">DESKTOP POS</span></span></a>
             <div class="relative max-w-sm"><p class="mb-4 text-xs font-bold uppercase tracking-[0.2em] login-theme-highlight">Business, in sync</p><h1 class="text-4xl font-semibold leading-tight tracking-tight">Every sale.<br>One clear picture.</h1><p class="mt-5 leading-7 text-emerald-50/65">Your point of sale, your team, your numbers — all in one place.</p></div>
             <p class="relative text-xs text-emerald-50/40">Secure access for your business team.</p>
         </section>
         <section class="flex items-center px-6 py-10 sm:px-12">
             <div class="mx-auto w-full max-w-sm">
-                <div class="mb-8 md:hidden"><span class="font-bold tracking-[0.2em] login-theme-mid-text">KIKIMO POS</span></div>
+                <a href="/" class="mb-8 inline-flex items-center gap-3 md:hidden"><span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl login-theme-secondary-bg text-xl font-black login-theme-dark-text">K</span><span><span class="block whitespace-nowrap text-base font-bold tracking-tight login-theme-mid-text">Kikimo <span class="login-theme-secondary">Dev</span></span><span class="mt-0.5 block whitespace-nowrap text-[9px] font-medium tracking-[0.2em] login-theme-primary">DESKTOP POS</span></span></a>
                 <p class="text-sm font-semibold login-theme-primary">WELCOME BACK</p><h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Sign in to your account</h2><p class="mt-2 text-sm text-slate-500">Enter your business account credentials.</p>
+                @if(session('login_session_expired'))<div role="alert" class="mt-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Your login session expired. Please sign in again.</div>@endif
                 @if(session('status'))<div class="mt-5 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{{ session('status') }}</div>@endif
                 @if($errors->any())<div class="mt-5 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{{ $errors->first() }}</div>@endif
                 <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5">
