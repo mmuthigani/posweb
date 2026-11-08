@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -14,9 +15,12 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function login(): View
+    public function login(): Response
     {
-        return view('auth.login');
+        return response()->view('auth.login')
+            ->header('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
     }
 
     public function authenticate(Request $request): RedirectResponse
