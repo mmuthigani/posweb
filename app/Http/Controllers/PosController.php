@@ -85,6 +85,17 @@ class PosController extends Controller
         return view('products.index', compact('products'));
     }
 
+    public function showProduct(Product $product): View
+    {
+        $product = Product::query()
+            ->where('business_id', Auth::user()->business_id)
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->where('terminal_id', Auth::user()->pos_terminal_id))
+            ->with('terminal')
+            ->findOrFail($product->id);
+
+        return view('products.show', compact('product'));
+    }
+
     public function cashiers(Request $request): View
     {
         $request->validate(['q' => ['nullable', 'string', 'max:150']]);

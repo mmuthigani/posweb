@@ -184,6 +184,57 @@ class DesktopPosSyncTest extends TestCase
         ]);
     }
 
+    public function test_product_details_page_displays_the_saved_payload_fields(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $payload = [
+            'id' => 6,
+            'sku' => 'GNN - 01',
+            'name' => 'guinness',
+            'price' => 270,
+            'stock' => 47,
+            'barcode' => '2000000000015',
+            'is_active' => 1,
+            'unit_label' => 'unit',
+            'buying_price' => 219,
+            'product_type' => 'standard',
+            'offer_enabled' => 0,
+            'offer_percent' => 0,
+            'conversion_quantity' => 1,
+        ];
+
+        $this->withHeaders(['Idempotency-Key' => 'product-6-details'])
+            ->postJson('/api/desktop-pos/sync', [
+                'client_id' => $terminal->client_id,
+                'machine_id' => $terminal->machine_id,
+                'entity_type' => 'product',
+                'entity_id' => 6,
+                'operation' => 'upsert',
+                'payload' => $payload,
+            ])->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $product = $terminal->business->products()->where('desktop_product_id', 6)->firstOrFail();
+        $user = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'product-owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->get(route('products.show', $product))
+            ->assertOk()
+            ->assertSee('Received product fields')
+            ->assertSee('GNN - 01')
+            ->assertSee('Buying Price')
+            ->assertSee('219')
+            ->assertSee('Offer Enabled')
+            ->assertSee('Disabled')
+            ->assertSee('Conversion Quantity')
+            ->assertSee('standard');
+    }
+
     public function test_unregistered_machine_request_is_retained_without_business_assignment(): void
     {
         $this->registeredTerminal();

@@ -52,6 +52,7 @@ Route::middleware(['auth', EnsureActiveBusiness::class])->group(function () {
     Route::get('/sales/{sale}', [PosController::class, 'showSale'])->name('sales.show');
     Route::get('/sales/{sale}/receipt', [PosController::class, 'receipt'])->name('sales.receipt');
     Route::get('/products', [PosController::class, 'products'])->name('products.index');
+    Route::get('/products/{product}', [PosController::class, 'showProduct'])->name('products.show');
     Route::get('/cashiers', [PosController::class, 'cashiers'])->name('cashiers.index');
     Route::get('/terminals', [PosController::class, 'terminals'])->name('terminals.index');
     Route::get('/terminals/{terminal}/sales', [PosController::class, 'terminalSales'])->name('terminals.sales');

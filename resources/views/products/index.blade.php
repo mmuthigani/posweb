@@ -30,7 +30,7 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($products as $product)
                         <tr class="hover:bg-slate-50/70">
-                            <td data-label="Product" class="px-5 py-4 font-medium text-slate-800">{{ $product->name }}<span class="mt-0.5 block text-xs text-slate-400">{{ $product->terminal?->terminal_name ?: 'Terminal unavailable' }}</span></td>
+                            <td data-label="Product" class="px-5 py-4 font-medium text-slate-800"><a href="{{ route('products.show', $product) }}" class="hover:text-[#01553d] hover:underline">{{ $product->name }}</a><span class="mt-0.5 block text-xs font-normal text-slate-400">{{ $product->terminal?->terminal_name ?: 'Terminal unavailable' }} · <a href="{{ route('products.show', $product) }}" class="text-[#01553d] hover:underline">View details</a></span></td>
                             <td data-label="Desktop ID" class="px-5 py-4 text-slate-500">{{ $product->desktop_product_id }}</td>
                             <td data-label="SKU / barcode" class="px-5 py-4 text-slate-600">{{ $product->sku ?: '—' }}<span class="mt-0.5 block text-xs text-slate-400">{{ $product->barcode ?: '' }}</span></td>
                             <td data-label="Price" class="px-5 py-4 text-right font-medium">{{ $product->unit_price === null ? '—' : auth()->user()->business->currency.' '.number_format((float) $product->unit_price, 2) }}</td>
