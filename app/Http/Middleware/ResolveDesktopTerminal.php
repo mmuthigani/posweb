@@ -14,6 +14,10 @@ class ResolveDesktopTerminal
         $machineId = $request->input('machine_id');
         $clientId = $request->input('client_id');
 
+        if (is_string($machineId) && in_array($machineId, config('desktop_pos.special_machine_ids', []), true)) {
+            return $next($request);
+        }
+
         if (! is_string($machineId) || ! is_string($clientId)) {
             return $next($request);
         }

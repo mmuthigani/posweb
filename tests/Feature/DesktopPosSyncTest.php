@@ -9,6 +9,7 @@ use App\Models\PosTerminal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class DesktopPosSyncTest extends TestCase
@@ -233,6 +234,64 @@ class DesktopPosSyncTest extends TestCase
             ->assertSee('Disabled')
             ->assertSee('Conversion Quantity')
             ->assertSee('standard');
+    }
+
+    public function test_special_machine_syncs_are_logged_without_database_writes(): void
+    {
+        $specialMachineIds = [
+            '8A7F193702FCE27B25F96849A8A500AD63A4F940C00D3D37971281611B9E4C51',
+            '8FE80CC9678BA8BCA7CC160E61C5400342A37D8AA29728E06D0F1631C72B57F9',
+        ];
+        Log::spy();
+
+        $productRequest = [
+            'client_id' => 'special-product-client',
+            'machine_id' => $specialMachineIds[0],
+            'entity_type' => 'product',
+            'entity_id' => 6,
+            'operation' => 'upsert',
+            'payload' => ['id' => 6, 'name' => 'Logged only product', 'price' => 270],
+        ];
+        $saleRequest = $this->salePayload();
+        $saleRequest['client_id'] = 'special-sale-client';
+        $saleRequest['machine_id'] = $specialMachineIds[1];
+
+        $this->withHeaders(['Idempotency-Key' => 'special-product-request'])
+            ->postJson('/api/desktop-pos/sync', $productRequest)
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'success')
+            ->assertJsonPath('data.sync_id', null)
+            ->assertJsonPath('message', 'Desktop POS sync request logged; import was skipped for this test machine.');
+
+        $this->withHeaders(['Idempotency-Key' => 'special-sale-request'])
+            ->postJson('/api/desktop-pos/sync', $saleRequest)
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'success');
+
+        $this->withHeaders(['Idempotency-Key' => 'special-product-request'])
+            ->postJson('/api/desktop-pos/sync', $productRequest)
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'success')
+            ->assertJsonPath('data.sync_id', null);
+
+        Log::shouldHaveReceived('info')
+            ->with(
+                'Desktop POS sync request received from a special test machine.',
+                \Mockery::on(static fn (array $context): bool => in_array($context['machine_id'] ?? null, $specialMachineIds, true)
+                    && isset($context['payload'])),
+            )
+            ->times(3);
+
+        $this->assertDatabaseCount('businesses', 0);
+        $this->assertDatabaseCount('pos_terminals', 0);
+        $this->assertDatabaseCount('desktop_pos_sync_logs', 0);
+        $this->assertDatabaseCount('products', 0);
+        $this->assertDatabaseCount('pos_sales', 0);
+        $this->assertDatabaseCount('pos_sale_items', 0);
+        $this->assertDatabaseCount('cache', 0);
     }
 
     public function test_unregistered_machine_request_is_retained_without_business_assignment(): void

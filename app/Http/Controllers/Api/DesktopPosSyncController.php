@@ -10,6 +10,7 @@ use App\Services\SyncProcessor;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class DesktopPosSyncController extends Controller
@@ -34,9 +35,6 @@ class DesktopPosSyncController extends Controller
         ]);
         $validated['payload'] = $request->input('payload');
 
-        /** @var PosTerminal|null $terminal */
-        $terminal = $request->attributes->get('pos_terminal');
-
         if ($validated['operation'] === 'upsert' && $validated['entity_type'] !== 'product') {
             throw ValidationException::withMessages([
                 'operation' => 'The upsert operation is only supported for products.',
@@ -49,6 +47,39 @@ class DesktopPosSyncController extends Controller
                 'payload.items' => ['required', 'array'],
             ]);
         }
+
+        if (in_array($validated['machine_id'], config('desktop_pos.special_machine_ids', []), true)) {
+            $receivedAt = now();
+            Log::info('Desktop POS sync request received from a special test machine.', [
+                'client_id' => $validated['client_id'],
+                'machine_id' => $validated['machine_id'],
+                'entity_type' => $validated['entity_type'],
+                'entity_id' => $validated['entity_id'],
+                'operation' => $validated['operation'],
+                'idempotency_key' => $validated['idempotency_key'],
+                'payload' => $validated['payload'],
+                'received_at' => $receivedAt->toIso8601String(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Desktop POS sync request logged; import was skipped for this test machine.',
+                'data' => [
+                    'sync_id' => null,
+                    'client_id' => $validated['client_id'],
+                    'machine_id' => $validated['machine_id'],
+                    'entity_type' => $validated['entity_type'],
+                    'entity_id' => $validated['entity_id'],
+                    'operation' => $validated['operation'],
+                    'status' => 'success',
+                    'receipt_url' => null,
+                    'received_at' => $receivedAt,
+                ],
+            ]);
+        }
+
+        /** @var PosTerminal|null $terminal */
+        $terminal = $request->attributes->get('pos_terminal');
 
         try {
             $syncLog = DesktopPosSyncLog::query()->create([
