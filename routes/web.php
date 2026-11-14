@@ -29,6 +29,11 @@ Route::get('/migrate', function () {
 
 Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
+Route::get('/documentation', fn () => response()->file(
+    base_path('docs/user-guide.html'),
+    ['Content-Type' => 'text/html; charset=UTF-8'],
+))->name('documentation');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'authenticate'])->middleware('throttle:10,1')->name('login.store');
