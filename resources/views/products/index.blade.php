@@ -13,36 +13,47 @@
         <input name="q" value="{{ request('q') }}" placeholder="Search name, SKU or barcode" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#2b805b] focus:outline-none">
         <button class="min-h-11 rounded-xl bg-[#01553d] px-4 py-2.5 text-sm font-semibold text-white">Search</button>
     </form>
-    <section class="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-        <div class="border-b border-slate-100 px-4 py-4 text-sm text-slate-500 sm:px-5"><span class="font-semibold text-slate-800">{{ $products->total() }}</span> products</div>
-        <div class="overflow-x-auto">
-            <table class="responsive-card-table w-full min-w-[760px] text-left text-sm">
-                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
-                    <tr>
-                        <th class="px-5 py-3 font-semibold">Product</th>
-                        <th class="px-5 py-3 font-semibold">Desktop ID</th>
-                        <th class="px-5 py-3 font-semibold">SKU / barcode</th>
-                        <th class="px-5 py-3 text-right font-semibold">Price</th>
-                        <th class="px-5 py-3 text-right font-semibold">Stock</th>
-                        <th class="px-5 py-3 font-semibold">Last synced</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse($products as $product)
-                        <tr class="hover:bg-slate-50/70">
-                            <td data-label="Product" class="px-5 py-4 font-medium text-slate-800"><a href="{{ route('products.show', $product) }}" class="hover:text-[#01553d] hover:underline">{{ $product->name }}</a><span class="mt-0.5 block text-xs font-normal text-slate-400">{{ $product->terminal?->terminal_name ?: 'Terminal unavailable' }} · <a href="{{ route('products.show', $product) }}" class="text-[#01553d] hover:underline">View details</a></span></td>
-                            <td data-label="Desktop ID" class="px-5 py-4 text-slate-500">{{ $product->desktop_product_id }}</td>
-                            <td data-label="SKU / barcode" class="px-5 py-4 text-slate-600">{{ $product->sku ?: '—' }}<span class="mt-0.5 block text-xs text-slate-400">{{ $product->barcode ?: '' }}</span></td>
-                            <td data-label="Price" class="px-5 py-4 text-right font-medium">{{ $product->unit_price === null ? '—' : auth()->user()->business->currency.' '.number_format((float) $product->unit_price, 2) }}</td>
-                            <td data-label="Stock" class="px-5 py-4 text-right text-slate-600">{{ $product->stock_quantity === null ? '—' : number_format((float) $product->stock_quantity, 3) }}</td>
-                            <td data-label="Last synced" class="px-5 py-4 text-slate-500">{{ $product->synced_at?->diffForHumans() ?: '—' }}</td>
-                        </tr>
-                    @empty
-                        <tr class="responsive-table-empty"><td colspan="6" class="px-5 py-16 text-center"><p class="font-medium text-slate-700">No synchronized products yet</p><p class="mt-1 text-sm text-slate-400">Products appear when your desktop POS sends product sync payloads.</p></td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <section>
+        <div class="mb-4 flex items-center justify-between gap-3">
+            <p class="text-sm text-slate-500"><span class="font-semibold text-slate-800">{{ $products->total() }}</span> products</p>
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Catalog · View only</p>
         </div>
-        <div class="max-w-full overflow-x-auto border-t border-slate-100 px-4 py-4 sm:px-5">{{ $products->links() }}</div>
+        @if($products->count())
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
+                @foreach($products as $product)
+                    <a href="{{ route('products.show', $product) }}" class="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg hover:shadow-slate-900/5 focus:outline-none focus:ring-4 focus:ring-emerald-900/10">
+                        <div class="relative aspect-[4/3] overflow-hidden bg-slate-50">
+                            @if($product->image_data_uri)
+                                <img src="{{ $product->image_data_uri }}" alt="{{ $product->name }}" loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                            @else
+                                <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100">
+                                    <svg class="h-12 w-12 text-emerald-900/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z"/><circle cx="9" cy="9" r="1.5"/><path d="m19 15-4-4-8 8"/></svg>
+                                </div>
+                            @endif
+                            <span class="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm">ID {{ $product->desktop_product_id }}</span>
+                            @if($product->stock_quantity !== null)
+                                <span class="absolute bottom-2 right-2 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm {{ (float) $product->stock_quantity > 0 ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white' }}">
+                                    {{ number_format((float) $product->stock_quantity, 3) }} in stock
+                                </span>
+                            @endif
+                        </div>
+                        <div class="flex flex-1 flex-col p-3 sm:p-4">
+                            <h2 class="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-slate-800 group-hover:text-[#01553d] sm:text-base">{{ $product->name }}</h2>
+                            <p class="mt-1 truncate text-xs text-slate-400">{{ $product->sku ? 'SKU '.$product->sku : ($product->barcode ? 'Barcode '.$product->barcode : ($product->terminal?->terminal_name ?: 'Product')) }}</p>
+                            <div class="mt-3 flex items-end justify-between gap-2 border-t border-slate-100 pt-3">
+                                <span class="text-sm font-bold text-[#01553d] sm:text-base">{{ $product->unit_price === null ? 'Price unavailable' : auth()->user()->business->currency.' '.number_format((float) $product->unit_price, 2) }}</span>
+                                <span class="shrink-0 text-xs font-semibold text-slate-400 group-hover:text-[#01553d]">Details <span aria-hidden="true">→</span></span>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        @else
+            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-16 text-center">
+                <p class="font-medium text-slate-700">No synchronized products yet</p>
+                <p class="mt-1 text-sm text-slate-400">Products appear when your desktop POS sends product sync payloads.</p>
+            </div>
+        @endif
+        <div class="mt-5 max-w-full overflow-x-auto rounded-2xl border border-slate-100 bg-white px-4 py-4 sm:px-5">{{ $products->links() }}</div>
     </section>
 @endsection

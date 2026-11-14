@@ -255,7 +255,7 @@
                                 @endif
                             </td>
                             <td data-label="Total" class="px-6 py-3.5 text-right font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $sale->total, 2) }}</td>
-                            <td data-label="Time" class="px-6 py-3.5 text-slate-500">{{ $sale->sold_at?->format('H:i') ?: '—' }}</td>
+                            <td data-label="Time" class="px-6 py-3.5 text-slate-500">{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('H:i') ?: '—' }}</td>
                         </tr>
                     @empty
                         <tr class="responsive-table-empty">

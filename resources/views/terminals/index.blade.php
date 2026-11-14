@@ -41,7 +41,7 @@
                         <tr>
                             <td data-label="Terminal" class="px-5 py-4">
                                 <p class="font-semibold text-slate-800">{{ $terminal->terminal_name }}</p>
-                                <p class="mt-0.5 text-xs text-slate-400">Added {{ $terminal->created_at->format('M j, Y') }}</p>
+                                <p class="mt-0.5 text-xs text-slate-400">Added {{ $terminal->created_at->setTimezone(config('app.business_timezone'))->format('M j, Y') }}</p>
                             </td>
                             <td data-label="Machine ID" class="px-5 py-4 font-mono text-xs text-slate-600">{{ $terminal->machine_id }}</td>
                             <td data-label="Client ID" class="px-5 py-4 font-mono text-xs text-slate-600">{{ $terminal->client_id ?: '—' }}</td>

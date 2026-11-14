@@ -7,6 +7,7 @@ use App\Models\PosSale;
 use App\Models\PosTerminal;
 use App\Models\Product;
 use App\Services\SyncProcessor;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +51,7 @@ class PosController extends Controller
             foreach ($sales as $sale) {
                 fputcsv($output, [
                     $this->safeCsv($sale->receipt_no),
-                    $sale->sold_at?->toDateTimeString(),
+                    $sale->sold_at?->setTimezone(config('app.business_timezone'))->toDateTimeString(),
                     $this->safeCsv($sale->cashier_name),
                     $this->safeCsv($sale->payment_method),
                     $sale->subtotal,
@@ -62,7 +63,7 @@ class PosController extends Controller
             }
 
             fclose($output);
-        }, 'kikimo-sales-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, 'kikimo-sales-'.now(config('app.business_timezone'))->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function products(Request $request): View
@@ -138,7 +139,6 @@ class PosController extends Controller
         return view('sales.index', ['sales' => $sales, 'terminal' => $terminal]);
     }
 
-
     public function syncHistory(Request $request): View
     {
         $request->validate([
@@ -181,14 +181,14 @@ class PosController extends Controller
                 $query->where(
                     'received_at',
                     '>=',
-                    $request->date('from')->startOfDay()
+                    Carbon::parse($request->input('from'), config('app.business_timezone'))->startOfDay()->utc()
                 );
             })
             ->when($request->filled('to'), function ($query) use ($request) {
                 $query->where(
                     'received_at',
                     '<=',
-                    $request->date('to')->endOfDay()
+                    Carbon::parse($request->input('to'), config('app.business_timezone'))->endOfDay()->utc()
                 );
             })
             ->orderByDesc('received_at')
@@ -198,7 +198,6 @@ class PosController extends Controller
 
         return view('sync.index', compact('syncLogs'));
     }
-
 
     public function showSync(DesktopPosSyncLog $syncLog): View
     {
@@ -235,8 +234,12 @@ class PosController extends Controller
                 });
             })
             ->when($request->filled('payment_method'), fn (Builder $query) => $query->where('payment_method', $request->string('payment_method')->toString()))
-            ->when($request->filled('from'), fn (Builder $query) => $query->whereDate('sold_at', '>=', $request->date('from')))
-            ->when($request->filled('to'), fn (Builder $query) => $query->whereDate('sold_at', '<=', $request->date('to')));
+            ->when($request->filled('from'), function (Builder $query) use ($request): void {
+                $query->where('sold_at', '>=', Carbon::parse($request->input('from'), config('app.business_timezone'))->startOfDay()->utc());
+            })
+            ->when($request->filled('to'), function (Builder $query) use ($request): void {
+                $query->where('sold_at', '<=', Carbon::parse($request->input('to'), config('app.business_timezone'))->endOfDay()->utc());
+            });
     }
 
     private function authorizeSyncLog(DesktopPosSyncLog $syncLog): void

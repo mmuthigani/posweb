@@ -31,6 +31,12 @@ For local development only, `php artisan db:seed` creates the demo owner `admin@
 
 Configure production mail delivery in `.env` for password reset links. Never enable `APP_DEBUG` in production.
 
+## Timezone and dates
+
+The application stores timestamps in UTC and displays dates and times in East Africa Time (`Africa/Nairobi`, UTC+03:00). Local date filters use Kenya day boundaries. The application storage timezone is fixed to UTC; set `BUSINESS_TIMEZONE` only if the business operates in another timezone. Date filter inputs remain in the standard `YYYY-MM-DD` format.
+
+After changing the environment value in a deployment with cached configuration, refresh it with `php artisan config:cache`.
+
 ## Desktop POS sync
 
 The endpoint is `POST /api/desktop-pos/sync` (not `/api/api/...`). Register each terminal in the dashboard using the exact machine and client IDs sent by the desktop POS. Bearer authentication is disabled: the `Authorization` header can be omitted, and any supplied value is ignored. The API matches both submitted machine and client IDs against an active terminal registered to a business:

@@ -45,6 +45,41 @@ class DesktopPosSyncTest extends TestCase
         $this->assertDatabaseCount('pos_sales', 1);
     }
 
+    public function test_sales_and_sync_timestamps_display_in_east_africa_time(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $this->travelTo(now()->setDate(2026, 11, 14)->setTime(7, 19));
+
+        $payload = $this->salePayload();
+        $payload['payload']['sale']['created_at'] = '2026-11-14T07:19:00.000Z';
+
+        $this->withHeaders(['Idempotency-Key' => 'kenya-time-display'])
+            ->postJson('/api/desktop-pos/sync', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $admin = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'kenya-time-owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+        $syncLog = DesktopPosSyncLog::query()->firstOrFail();
+
+        $this->actingAs($admin)->get(route('sales.index'))
+            ->assertOk()
+            ->assertSee('Nov 14, 2026 10:19');
+
+        $this->get(route('sync.index'))
+            ->assertOk()
+            ->assertSee('Nov 14, 2026 10:19:00');
+
+        $this->get(route('sync.show', $syncLog))
+            ->assertOk()
+            ->assertSee('Nov 14, 2026 10:19:00');
+    }
+
     public function test_saved_sale_receipt_displays_sale_data_and_business_email(): void
     {
         [$terminal] = $this->registeredTerminal();
@@ -233,6 +268,50 @@ class DesktopPosSyncTest extends TestCase
             ->assertSee('Disabled')
             ->assertSee('Conversion Quantity')
             ->assertSee('standard');
+    }
+
+    public function test_product_image_is_rendered_instead_of_showing_its_base64_payload(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lMkAAAAASUVORK5CYII=';
+
+        $this->withHeaders(['Idempotency-Key' => 'product-image-details'])
+            ->postJson('/api/desktop-pos/sync', [
+                'client_id' => $terminal->client_id,
+                'machine_id' => $terminal->machine_id,
+                'entity_type' => 'product',
+                'entity_id' => 7,
+                'operation' => 'upsert',
+                'payload' => [
+                    'id' => 7,
+                    'name' => 'Product with image',
+                    'image' => "data:image/png;base64,{$image}",
+                ],
+            ])->assertCreated()
+            ->assertJsonPath('data.status', 'success');
+
+        $product = $terminal->business->products()->where('desktop_product_id', 7)->firstOrFail();
+        $user = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'product-image-owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->get(route('products.show', $product))
+            ->assertOk()
+            ->assertSee('src="data:image/png;base64,'.$image.'"', false)
+            ->assertDontSee('>'.$image.'</dd>', false);
+
+        $this->get(route('products.index'))
+            ->assertOk()
+            ->assertSee('grid grid-cols-2')
+            ->assertSee('Product with image')
+            ->assertSee('src="data:image/png;base64,'.$image.'"', false)
+            ->assertSee('View only')
+            ->assertDontSee('Add to cart')
+            ->assertDontSee('Sell product');
     }
 
     public function test_unregistered_machine_request_is_retained_without_business_assignment(): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PosSale;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +51,7 @@ class ReportsController extends Controller
                 fputcsv($output, array_map(fn ($value) => $this->safeCsv((string) $value), array_values((array) $row)));
             }
             fclose($output);
-        }, "kikimo-report-{$type}-".now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, "kikimo-report-{$type}-".now(config('app.business_timezone'))->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     private function reportRows(string $type, string $from, string $to)
@@ -71,7 +72,7 @@ class ReportsController extends Controller
                 ->join('pos_sales', 'pos_sales.id', '=', 'pos_sale_items.pos_sale_id')
                 ->where('pos_sales.business_id', Auth::user()->business_id)
                 ->when(! Auth::user()->isAdministrator(), fn ($query) => $query->where('pos_sales.terminal_id', Auth::user()->pos_terminal_id))
-                ->whereBetween('pos_sales.sold_at', [$from.' 00:00:00', $to.' 23:59:59'])
+                ->whereBetween('pos_sales.sold_at', $this->utcDateRange($from, $to))
                 ->selectRaw('pos_sale_items.product_name, pos_sale_items.product_id, SUM(pos_sale_items.quantity) AS units_sold, SUM(pos_sale_items.line_total) AS sales')
                 ->groupBy('pos_sale_items.product_name', 'pos_sale_items.product_id')
                 ->orderByDesc('units_sold')
@@ -93,14 +94,18 @@ class ReportsController extends Controller
     private function periodRows(Builder $sales, string $period)
     {
         $driver = DB::connection()->getDriverName();
+        $offsetMinutes = (int) (Carbon::now(config('app.business_timezone'))->getOffset() / 60);
+        $localSoldAt = $driver === 'sqlite'
+            ? "datetime(sold_at, '{$offsetMinutes} minutes')"
+            : "DATE_ADD(sold_at, INTERVAL {$offsetMinutes} MINUTE)";
         $expression = match ($period) {
-            'daily' => 'DATE(sold_at)',
+            'daily' => "DATE({$localSoldAt})",
             'weekly' => $driver === 'sqlite'
-                ? "strftime('%Y-%W', sold_at)"
-                : "DATE_FORMAT(sold_at, '%x-W%v')",
+                ? "strftime('%Y-%W', {$localSoldAt})"
+                : "DATE_FORMAT({$localSoldAt}, '%x-W%v')",
             'monthly' => $driver === 'sqlite'
-                ? "strftime('%Y-%m', sold_at)"
-                : "DATE_FORMAT(sold_at, '%Y-%m')",
+                ? "strftime('%Y-%m', {$localSoldAt})"
+                : "DATE_FORMAT({$localSoldAt}, '%Y-%m')",
         };
 
         return $sales
@@ -115,7 +120,7 @@ class ReportsController extends Controller
         return PosSale::query()
             ->where('business_id', Auth::user()->business_id)
             ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->where('terminal_id', Auth::user()->pos_terminal_id))
-            ->whereBetween('sold_at', [$from.' 00:00:00', $to.' 23:59:59']);
+            ->whereBetween('sold_at', $this->utcDateRange($from, $to));
     }
 
     private function validatedDates(Request $request): array
@@ -126,8 +131,16 @@ class ReportsController extends Controller
         ]);
 
         return [
-            'from' => $validated['from'] ?? now()->startOfMonth()->toDateString(),
-            'to' => $validated['to'] ?? today()->toDateString(),
+            'from' => $validated['from'] ?? Carbon::now(config('app.business_timezone'))->startOfMonth()->toDateString(),
+            'to' => $validated['to'] ?? Carbon::now(config('app.business_timezone'))->toDateString(),
+        ];
+    }
+
+    private function utcDateRange(string $from, string $to): array
+    {
+        return [
+            Carbon::parse($from, config('app.business_timezone'))->startOfDay()->utc(),
+            Carbon::parse($to, config('app.business_timezone'))->endOfDay()->utc(),
         ];
     }
 

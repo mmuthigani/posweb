@@ -56,8 +56,8 @@
                                     {{ ucfirst($syncLog->status) }}
                                 </span>
                             </td>
-                            <td data-label="Received" class="px-5 py-4 text-slate-500">{{ $syncLog->received_at?->format('M j, Y H:i:s') ?: '—' }}</td>
-                            <td data-label="Processed" class="px-5 py-4 text-slate-500">{{ $syncLog->processed_at?->format('M j, Y H:i:s') ?: '—' }}</td>
+                            <td data-label="Received" class="px-5 py-4 text-slate-500">{{ $syncLog->received_at?->setTimezone(config('app.business_timezone'))->format('M j, Y H:i:s') ?: '—' }}</td>
+                            <td data-label="Processed" class="px-5 py-4 text-slate-500">{{ $syncLog->processed_at?->setTimezone(config('app.business_timezone'))->format('M j, Y H:i:s') ?: '—' }}</td>
                             <td data-label="Action" class="px-5 py-4 text-right">
                                 <a href="{{ route('sync.show', $syncLog) }}" class="font-semibold text-[#01553d] hover:underline">Details</a>
                             </td>

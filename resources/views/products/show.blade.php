@@ -18,9 +18,17 @@
             <h2 class="font-semibold text-slate-900">Received product fields</h2>
             <p class="mt-1 text-sm text-slate-500">Values are shown from the synchronized product payload; no product data has been changed.</p>
         </div>
+        @if($product->image_data_uri)
+            <div class="border-b border-slate-100 px-5 py-4">
+                <img src="{{ $product->image_data_uri }}" alt="{{ $product->name }}" class="max-h-72 max-w-full rounded-xl object-contain">
+            </div>
+        @endif
         @if($product->payload)
             <dl class="grid gap-px bg-slate-100 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach($product->payload as $key => $value)
+                    @if(preg_match('/image|photo|picture/i', (string) $key))
+                        @continue
+                    @endif
                     @php
                         $displayValue = match ($key) {
                             'is_active' => in_array($value, [true, 1, '1'], true) ? 'Active' : 'Inactive',

@@ -16,23 +16,27 @@ class DashboardController extends Controller
     {
         $businessId = Auth::user()->business_id;
         $terminalId = Auth::user()->isAdministrator() ? null : Auth::user()->pos_terminal_id;
-        $today = today();
+        $today = Carbon::now(config('app.business_timezone'))->startOfDay();
+        $todayStartUtc = $today->copy()->utc();
+        $todayEndUtc = $today->copy()->endOfDay()->utc();
         $sales = PosSale::query()
             ->where('business_id', $businessId)
             ->when($terminalId, fn ($query) => $query->where('terminal_id', $terminalId));
-        $todaySales = (clone $sales)->whereDate('sold_at', $today);
+        $todaySales = (clone $sales)->whereBetween('sold_at', [$todayStartUtc, $todayEndUtc]);
         $terminals = PosTerminal::query()
             ->where('business_id', $businessId)
             ->when($terminalId, fn ($query) => $query->whereKey($terminalId));
         $machineIds = (clone $terminals)->pluck('machine_id');
 
-        $daily = collect(range(6, 0))->map(function (int $days) use ($sales): array {
-            $date = today()->subDays($days);
+        $daily = collect(range(6, 0))->map(function (int $days) use ($sales, $today): array {
+            $date = $today->copy()->subDays($days);
+            $dateStartUtc = $date->copy()->utc();
+            $dateEndUtc = $date->copy()->endOfDay()->utc();
 
             return [
                 'label' => $date->format('D'),
                 'date' => $date->toDateString(),
-                'total' => (float) (clone $sales)->whereDate('sold_at', $date)->sum('total'),
+                'total' => (float) (clone $sales)->whereBetween('sold_at', [$dateStartUtc, $dateEndUtc])->sum('total'),
             ];
         });
 
@@ -46,7 +50,7 @@ class DashboardController extends Controller
             ->join('pos_sales', 'pos_sales.id', '=', 'pos_sale_items.pos_sale_id')
             ->where('pos_sales.business_id', $businessId)
             ->when($terminalId, fn ($query) => $query->where('pos_sales.terminal_id', $terminalId))
-            ->whereDate('pos_sales.sold_at', $today)
+            ->whereBetween('pos_sales.sold_at', [$todayStartUtc, $todayEndUtc])
             ->selectRaw('pos_sale_items.product_name, SUM(pos_sale_items.quantity) AS units, SUM(pos_sale_items.line_total) AS amount')
             ->groupBy('pos_sale_items.product_name')
             ->orderByDesc('units')
@@ -66,7 +70,10 @@ class DashboardController extends Controller
             'todaySales' => (float) (clone $todaySales)->sum('total'),
             'todayReceived' => (float) (clone $todaySales)->sum('amount_paid'),
             'todayChange' => (float) (clone $todaySales)->sum('change_due'),
-            'monthlySales' => (clone $sales)->whereBetween('sold_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('total'),
+            'monthlySales' => (clone $sales)->whereBetween('sold_at', [
+                Carbon::now(config('app.business_timezone'))->startOfMonth()->utc(),
+                Carbon::now(config('app.business_timezone'))->endOfMonth()->utc(),
+            ])->sum('total'),
             'daily' => $daily,
             'dailyMaximum' => max(1, (float) $daily->max('total')),
             'paymentMethods' => $paymentMethods,
@@ -76,7 +83,7 @@ class DashboardController extends Controller
             'recentSales' => (clone $sales)->with('terminal')->latest('sold_at')->limit(8)->get(),
             'syncPending' => DesktopPosSyncLog::query()->whereIn('machine_id', $machineIds)->whereIn('status', ['pending', 'processing'])->count(),
             'syncFailed' => DesktopPosSyncLog::query()->whereIn('machine_id', $machineIds)->where('status', 'failed')->count(),
-            'todayLabel' => Carbon::now()->format('l, F j'),
+            'todayLabel' => Carbon::now(config('app.business_timezone'))->format('l, F j'),
         ]);
     }
 }

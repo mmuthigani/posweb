@@ -164,7 +164,7 @@
             <hr class="rule">
             <div class="metadata">
                 <p><span>Receipt No.</span><span>{{ $sale->receipt_no ?: '#'.$sale->desktop_sale_id }}</span></p>
-                <p><span>Date</span><span>{{ $sale->sold_at?->format('d/m/Y, H:i:s') ?: 'Date unavailable' }}</span></p>
+                <p><span>Date</span><span>{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('d/m/Y, H:i:s') ?: 'Date unavailable' }}</span></p>
                 <p><span>Served by</span><span>{{ $sale->cashier_name ?: '—' }}</span></p>
             </div>
 

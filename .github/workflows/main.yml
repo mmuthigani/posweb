@@ -1,21 +1,23 @@
-name: CI/CD Pipeline - Production
+
+name: CI/CD Pipeline - UAT & Production
 
 on:
   push:
     branches:
       - main
+      - uat
   workflow_dispatch:
 
 jobs:
-  deploy-prod:
-    name: Deploy to Production
+  deploy-uat:
+    name: Deploy to UAT
+    if: github.ref == 'refs/heads/uat'
     runs-on: ubuntu-latest
 
     steps:
       - name: Get the latest code
         uses: actions/checkout@v4
 
-      # Setup PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -23,32 +25,78 @@ jobs:
           extensions: mbstring, bcmath, pdo, mysql
           coverage: none
 
-      # Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
-      # Install Composer dependencies
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
-      # Install NPM dependencies
       - name: Install NPM Dependencies
         run: npm ci
 
-      # Build production assets
       - name: Build Vite Assets
         run: npm run build
 
-      # Verify Vite manifest
       - name: Verify Vite Manifest
         run: |
           test -f public/build/manifest.json
           echo "Vite manifest generated successfully."
 
-      # Deploy to production
+      - name: Deploy to UAT
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_UAT_USERNAME }}
+          password: ${{ secrets.FTP_UAT_PASSWORD }}
+          server-dir: /
+          exclude: |
+            **/.env
+            **/.env.*
+            !**/.env.example
+            **/storage/**
+
+      - name: UAT Deployment completed
+        run: echo "Kikimo POS Web Management System deployed successfully to UAT."
+
+  deploy-prod:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the latest code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, pdo, mysql
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Vite Assets
+        run: npm run build
+
+      - name: Verify Vite Manifest
+        run: |
+          test -f public/build/manifest.json
+          echo "Vite manifest generated successfully."
+
       - name: Deploy to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -56,13 +104,11 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /
-
-          # Protect production environment files
           exclude: |
             **/.env
             **/.env.*
             !**/.env.example
             **/storage/**
 
-      - name: Deployment completed
-        run: echo "Kikimo POS Web Management System deployed successfully."
+      - name: Production Deployment completed
+        run: echo "Kikimo POS Web Management System deployed successfully to Production."

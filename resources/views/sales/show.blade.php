@@ -5,7 +5,7 @@
         <div>
             <a href="{{ route('sales.index') }}" class="text-sm font-medium text-[#01553d] hover:underline">← Sales</a>
             <h1 class="mt-2 text-2xl font-semibold text-slate-900">{{ $sale->receipt_no ?: 'Sale #'.$sale->desktop_sale_id }}</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $sale->sold_at?->format('F j, Y · H:i') ?: 'Date unavailable' }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('F j, Y · H:i') ?: 'Date unavailable' }}</p>
         </div>
         <a href="{{ route('sales.receipt', $sale) }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Print receipt</a>
     </div>

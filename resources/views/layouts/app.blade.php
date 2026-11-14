@@ -296,7 +296,7 @@
         <header class="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur md:px-8">
             <div class="flex items-center gap-3">
                 <button id="sidebar-toggle" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Toggle navigation" aria-expanded="true" aria-controls="sidebar"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-                <div><p class="text-xs font-medium text-slate-400">{{ now()->format('l, F j, Y') }}</p><p class="text-sm font-semibold text-slate-700">{{ auth()->user()->business->name }}</p></div>
+                <div><p class="text-xs font-medium text-slate-400">{{ now(config('app.business_timezone'))->format('l, F j, Y') }}</p><p class="text-sm font-semibold text-slate-700">{{ auth()->user()->business->name }}</p></div>
             </div>
             <div class="flex items-center gap-3">
                 @php($failedSyncCount = \App\Models\DesktopPosSyncLog::query()->whereIn('machine_id', auth()->user()->business->terminals()->select('machine_id'))->where('status', 'failed')->count())

@@ -52,7 +52,7 @@
                             <td data-label="Terminal" class="px-5 py-4 text-slate-600">{{ $sale->terminal?->terminal_name ?: '—' }}</td>
                             <td data-label="Payment" class="px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $sale->payment_method ?: 'Other' }}</span></td>
                             <td data-label="Total" class="px-5 py-4 text-right font-semibold text-slate-900">{{ auth()->user()->business->currency }} {{ number_format((float) $sale->total, 2) }}</td>
-                            <td data-label="Date" class="px-5 py-4 text-slate-500">{{ $sale->sold_at?->format('M j, Y H:i') ?: '—' }}</td>
+                            <td data-label="Date" class="px-5 py-4 text-slate-500">{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('M j, Y H:i') ?: '—' }}</td>
                             <td data-label="Action" class="px-5 py-4 text-right"><a href="{{ route('sales.show', $sale) }}" class="text-sm font-semibold text-[#01553d] hover:underline">View</a></td>
                         </tr>
                     @empty
