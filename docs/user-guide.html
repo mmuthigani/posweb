@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kikimo Desktop POS user guide for installation, activation, sales, products, inventory, and reports." />
+  <title>Kikimo Desktop POS - User Guide</title>
+  <style>
+    :root {
+      --bg: #fff7f6;
+      --paper: #ffffff;
+      --panel: #fff1f1;
+      --primary: #7a0f1d;
+      --primary-dark: #520913;
+      --primary-soft: #f7dfe2;
+      --secondary: #c6374a;
+      --text: #241416;
+      --muted: #6a4e52;
+      --line: #f0d0d5;
+      --gold: #f2c76d;
+      --success: #196b4d;
+      --warning-bg: #fff3d6;
+      --warning-line: #d9a847;
+      --shadow: rgba(92, 15, 21, 0.12);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --container: 1180px;
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #fff8f8 0%, #fff4f4 100%);
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover { color: var(--primary-dark); }
+
+    img { max-width: 100%; }
+
+    .skip-link {
+      position: absolute;
+      left: 1rem;
+      top: -4rem;
+      z-index: 500;
+      padding: 0.7rem 1rem;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .skip-link:focus { top: 1rem; }
+
+    .hero {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary) 55%, #bc2439 100%);
+      color: #fff;
+      padding: clamp(2.2rem, 6vw, 5rem) 1rem;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.08);
+    }
+
+    .hero-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.6rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 800;
+      color: #ffdfe6;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      line-height: 1.1;
+    }
+
+    .hero-subtitle {
+      max-width: 860px;
+      margin: 1rem 0 0;
+      color: #fbe5ea;
+      font-size: 1.08rem;
+    }
+
+    .page-shell {
+      max-width: var(--container);
+      margin: 2rem auto 4rem;
+      display: grid;
+      grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+      padding: 0 1rem;
+    }
+
+    .sidebar,
+    .content {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 28px var(--shadow);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 1rem;
+      padding: 1rem 1rem 0.8rem;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .sidebar h2 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .menu-toggle {
+      display: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--primary-dark);
+      border-radius: 10px;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .toc a {
+      display: block;
+      padding: 0.6rem 0.7rem;
+      border-radius: 10px;
+      color: var(--text);
+      font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .toc a:hover,
+    .toc a.active {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      transform: translateX(2px);
+    }
+
+    .content {
+      padding: clamp(1.2rem, 3vw, 2.4rem);
+    }
+
+    section {
+      scroll-margin-top: 1.2rem;
+    }
+
+    section + section {
+      margin-top: 2.6rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 0.8rem;
+      font-size: clamp(1.55rem, 3vw, 2rem);
+      line-height: 1.2;
+      color: var(--primary-dark);
+    }
+
+    h3 {
+      margin: 1.5rem 0 0.45rem;
+      font-size: 1.14rem;
+      line-height: 1.35;
+      color: var(--primary);
+    }
+
+    p, li {
+      margin: 0.7rem 0;
+      color: var(--text);
+    }
+
+    ul, ol {
+      padding-left: 1.4rem;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .feature-card,
+    .stack-box,
+    .callout,
+    .quick-box,
+    .faq-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fffaf9;
+      box-shadow: 0 8px 18px rgba(116, 22, 32, 0.04);
+    }
+
+    .feature-card,
+    .stack-box,
+    .quick-box {
+      padding: 1rem;
+    }
+
+    .feature-card h3,
+    .stack-box h3,
+    .quick-box h3 { margin-top: 0; }
+
+    .callout {
+      margin: 1rem 0;
+      padding: 0.95rem 1rem;
+      border-left: 5px solid var(--primary);
+      background: var(--panel);
+    }
+
+    .callout.warning {
+      border-left-color: var(--warning-line);
+      background: var(--warning-bg);
+    }
+
+    .callout strong { color: var(--primary-dark); }
+
+    .check-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .check-list li {
+      position: relative;
+      padding-left: 1.8rem;
+    }
+
+    .check-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 800;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.12rem 0.58rem;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    code {
+      border-radius: 6px;
+      background: #f7eded;
+      color: var(--primary-dark);
+      padding: 0.12rem 0.38rem;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      margin: 1rem 0;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #1f1214;
+      color: #fff2f4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.7rem 0.75rem;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #fff0f2;
+      color: var(--primary-dark);
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .faq-item {
+      overflow: hidden;
+    }
+
+    .faq-question {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font: inherit;
+      color: var(--primary-dark);
+      padding: 1rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .faq-question span:last-child {
+      display: inline-flex;
+      width: 24px;
+      height: 24px;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 1.1rem;
+      transition: transform 0.2s ease;
+    }
+
+    .faq-item.open .faq-question span:last-child {
+      transform: rotate(45deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+      padding: 0 1rem;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 220px;
+      padding-bottom: 1rem;
+    }
+
+    footer {
+      max-width: var(--container);
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 860px) {
+      .page-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .menu-toggle {
+        display: inline-flex;
+      }
+
+      .toc {
+        display: none;
+      }
+
+      .sidebar.open .toc {
+        display: block;
+        margin-top: 0.8rem;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .content {
+        padding: 1rem;
+      }
+
+      th, td {
+        padding: 0.6rem 0.5rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to guide</a>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Kikimo POS</p>
+      <h1>Desktop POS User Guide</h1>
+      <p class="hero-subtitle">A practical guide to installing, activating, operating, and maintaining Kikimo on a Windows store device.</p>
+    </div>
+  </header>
+
+  <div class="page-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Guide Menu</h2>
+        <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="toc">Menu</button>
+      </div>
+      <ul class="toc" id="toc">
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#activation">Activation</a></li>
+        <li><a href="#signin">Sign in</a></li>
+        <li><a href="#sales">Sales & checkout</a></li>
+        <li><a href="#products">Products</a></li>
+        <li><a href="#inventory">Inventory</a></li>
+        <li><a href="#reports">Reports</a></li>
+        <li><a href="#settings">Settings</a></li>
+        <li><a href="#support">Troubleshooting</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </aside>
+
+    <main class="content" id="content">
+      <section id="installation">
+        <h2>1. Installation</h2>
+        <p class="lead">Install Kikimo on a Windows computer that will serve as the local point-of-sale terminal.</p>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="tag">Step 1</span>
+            <h3>Download</h3>
+            <p>Get the latest Kikimo installer from the authorized source provided by the business owner or administrator.</p>
+          </article>
+          <article class="feature-card">
+            <span class="tag">Step 2</span>
+            <h3>Run installer</h3>
+            <p>Double-click the setup file and follow the installation wizard on the target Windows device.</p>
+          </article>
+          <article class="feature-card">
+            <span class="tag">Step 3</span>
+            <h3>Open app</h3>
+            <p>Launch Kikimo after installation completes. The app may ask for activation before it can be used.</p>
+          </article>
+        </div>
+
+        <div class="callout">
+          <strong>Important:</strong> Use a trusted Windows device with a stable local database and adequate permissions. The app stores sales and stock data on the local machine.
+        </div>
+      </section>
+
+      <section id="activation">
+        <h2>2. Activation</h2>
+        <p>Activation is required before the application can be used for daily operations.</p>
+
+        <div class="quick-box">
+          <h3>What to do</h3>
+          <p>Ask the owner or administrator for the activation code for this device. Enter the code in the activation screen shown by the app when you first open it.</p>
+        </div>
+
+        <div class="callout warning">
+          <strong>Note:</strong> Do not attempt to generate or share activation keys yourself. The code is assigned by the owner and is linked to the specific machine.
+        </div>
+
+        <ul>
+          <li>Use the exact machine activation code provided for this device.</li>
+          <li>Do not try to reuse a code from another computer.</li>
+          <li>If the code is missing or not accepted, contact the owner or administrator.</li>
+        </ul>
+      </section>
+
+      <section id="signin">
+        <h2>3. Sign in</h2>
+        <p>After activation, sign in with your assigned user account and PIN.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Typical access</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Administrator</td>
+              <td>Full access to products, sales, reports, team accounts, and configuration</td>
+            </tr>
+            <tr>
+              <td>Attendant</td>
+              <td>Sales, daily totals, and limited operational access</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout">
+          <strong>Security:</strong> Always sign out when leaving the terminal, and keep your PIN private. Do not share account credentials between staff members.
+        </div>
+      </section>
+
+      <section id="sales">
+        <h2>4. Sales and checkout</h2>
+        <p>Kikimo is designed for fast in-store retail sales on a Windows device.</p>
+
+        <h3>Basic checkout flow</h3>
+        <ol>
+          <li>Sign in to your assigned terminal.</li>
+          <li>Search for a product or scan its barcode.</li>
+          <li>Add items to the cart and adjust quantities if needed.</li>
+          <li>Choose a payment method such as cash, M-Pesa, card, mixed payment, or customer credit.</li>
+          <li>Review the total, tender, and change.</li>
+          <li>Complete the sale and print the receipt.</li>
+        </ol>
+
+        <h3>Useful sales features</h3>
+        <ul>
+          <li>Hold an order and resume it later</li>
+          <li>Apply promotional discounts if configured</li>
+          <li>Review product expiry information during checkout</li>
+          <li>Record partial customer payments and balances</li>
+          <li>Reprint receipts from sales history</li>
+        </ul>
+      </section>
+
+      <section id="products">
+        <h2>5. Products</h2>
+        <p>Use the product module to create, edit, and manage your store catalogue.</p>
+
+        <ul>
+          <li>Create and update products with SKU, barcode, price, stock, image, and expiry details</li>
+          <li>Deactivate products that are no longer sold</li>
+          <li>Import products using CSV or Excel files</li>
+          <li>Download a template to prepare import files</li>
+        </ul>
+
+        <div class="stack-box">
+          <h3>Recommended product hygiene</h3>
+          <ul class="check-list">
+            <li>Keep standard SKUs and barcode values consistent</li>
+            <li>Check expiry dates before promotions or large stock purchases</li>
+            <li>Update prices carefully when a supplier changes cost</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="inventory">
+        <h2>6. Inventory and stock management</h2>
+        <p>Track stock activity to keep retail operations accurate and reduce shortages.</p>
+
+        <ul>
+          <li>Review low-stock warnings and inventory summaries</li>
+          <li>Record purchases, adjustments, and wastage</li>
+          <li>Monitor stock movements and batch history</li>
+          <li>Print shelf labels for selected products</li>
+          <li>Manage measured stock using parent stock and split batch opening</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Measured stock:</strong> For measured products, open parent stock into batches and sell from the oldest open batch first. This keeps stock movement records consistent and helps with FIFO-based inventory tracking.
+        </div>
+      </section>
+
+      <section id="reports">
+        <h2>7. Reports and dashboard</h2>
+        <p>Use reports to track sales, cashier activity, low stock, and store performance.</p>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Daily overview</h3>
+            <p>Check sales totals, transaction counts, and daily vendor or cashier performance.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Product trends</h3>
+            <p>Review best-selling products and revenue by item.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Payment mix</h3>
+            <p>See how much revenue came through cash, card, M-Pesa, or credit.</p>
+          </article>
+        </div>
+
+        <ul>
+          <li>Review date-range sales reports for revenue and profit</li>
+          <li>Export report data to CSV when needed</li>
+          <li>Review stock and performance trends before ordering new stock</li>
+        </ul>
+      </section>
+
+      <section id="settings">
+        <h2>8. Settings and store configuration</h2>
+        <p>Administrators can configure store details, user access, and device settings.</p>
+
+        <ul>
+          <li>Update store name, address, and receipt details</li>
+          <li>Choose the app theme and visual layout</li>
+          <li>Review local database storage information</li>
+          <li>Check activation status and terminal information</li>
+          <li>Lock the workstation or workspace when needed</li>
+        </ul>
+
+        <div class="callout warning">
+          <strong>Cloud sync:</strong> Any optional cloud sync or remote integration must be configured only by the owner or system administrator through a secure backend. Do not enable or edit this without approval.
+        </div>
+      </section>
+
+      <section id="support">
+        <h2>9. Troubleshooting</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Problem</th>
+              <th>Check</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Activation failed</td>
+              <td>Confirm you have the correct activation code for this device and contact the owner if it is missing.</td>
+            </tr>
+            <tr>
+              <td>Product not found</td>
+              <td>Check barcode, SKU, and whether the item was deactivated.</td>
+            </tr>
+            <tr>
+              <td>Receipt not printing</td>
+              <td>Check the printer connection, queue state, and print settings.</td>
+            </tr>
+            <tr>
+              <td>Low stock warnings</td>
+              <td>Review stock availability, restock plans, and measured batch records.</td>
+            </tr>
+            <tr>
+              <td>Unexpected app behavior</td>
+              <td>Restart the app and contact the owner if the problem continues.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="faq">
+        <h2>10. FAQ</h2>
+
+        <div class="faq-list">
+          <div class="faq-item open">
+            <button class="faq-question" type="button">
+              <span>Where is my data stored?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Kikimo stores sales and inventory data locally on the Windows device in the app user-data directory. Regular backups are strongly recommended.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>Who should give me the activation code?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Ask the owner, administrator, or person managing the POS system for the activation code for this device.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>Can I reuse a code from another terminal?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>No. Activation codes are machine-specific and should only be used on the device they were assigned to.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>What should I do if I forget my PIN?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Ask the administrator or owner to reset or help recover the account. Do not share your PIN with colleagues.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>© Kikimo POS — Local retail operations guide</footer>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    const menuLinks = [...document.querySelectorAll('.toc a')];
+    const sections = [...document.querySelectorAll('main section[id]')];
+    const faqItems = [...document.querySelectorAll('.faq-item')];
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+
+    menuLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 860) {
+          sidebar.classList.remove('open');
+          menuToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    const setActiveLink = () => {
+      let currentId = sections[0]?.id || '';
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 140 && rect.bottom >= 140) {
+          currentId = section.id;
+        }
+      });
+
+      menuLinks.forEach((link) => {
+        const isActive = link.getAttribute('href') === `#${currentId}`;
+        link.classList.toggle('active', isActive);
+      });
+    };
+
+    window.addEventListener('scroll', setActiveLink, { passive: true });
+    setActiveLink();
+
+    faqItems.forEach((item) => {
+      const button = item.querySelector('.faq-question');
+      const answer = item.querySelector('.faq-answer');
+
+      button.addEventListener('click', () => {
+        const isOpen = item.classList.contains('open');
+        faqItems.forEach((faq) => {
+          faq.classList.remove('open');
+        });
+
+        if (!isOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
