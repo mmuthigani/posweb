@@ -13,4 +13,12 @@ class DocumentationRouteTest extends TestCase
             ->assertHeader('content-type', 'text/html; charset=UTF-8')
             ->assertSee('<title>Kikimo POS Management Dashboard — User Guide</title>', false);
     }
+
+    public function test_login_page_links_to_documentation(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('href="' . route('documentation') . '"', false)
+            ->assertSee('/documentation');
+    }
 }
