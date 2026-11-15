@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-uat:
     name: Deploy to UAT
-    if: github.ref == 'refs/heads/uat'
+    if: github.ref == 'refs/heads/uat' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
@@ -56,7 +56,6 @@ jobs:
             **/.env
             **/.env.*
             !**/.env.example
-            **/storage/**
 
       - name: UAT Deployment completed
         run: echo "Kikimo POS Web Management System deployed successfully to UAT."
