@@ -234,7 +234,10 @@
                                     <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 theme-primary-text">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6"/></svg>
                                     </span>
-                                    {{ $sale->receipt_no ?: '#'.$sale->desktop_sale_id }}
+                                    <span class="flex flex-col">
+                                        <span>{{ $sale->receipt_no ?: '#'.$sale->desktop_sale_id }}</span>
+                                        <span class="mt-0.5 text-xs font-normal text-slate-400">{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('M j, Y') ?: 'Date unavailable' }}</span>
+                                    </span>
                                 </a>
                             </td>
                             <td data-label="Cashier" class="px-6 py-3.5">
