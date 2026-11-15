@@ -269,12 +269,16 @@
                     <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0m5-12v6m-3-3h6"/></svg></span>
                     Team members
                 </a>
-                <a href="{{ route('settings.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('settings.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4L7.2 15a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z"/></svg></span>
-                    Settings
-                </a>
             @endif
+            <a href="{{ route('settings.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('settings.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4L7.2 15a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z"/></svg></span>
+                Business settings
+            </a>
             <div class="px-3 pb-1 pt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/40">Account</div>
+            <a href="{{ route('account.profile.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.profile.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+                My profile
+            </a>
             <a href="{{ route('account.password.edit') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {{ request()->routeIs('account.password.*') ? 'bg-[#144832] text-white' : 'text-emerald-50/70 hover:bg-white/10 hover:text-white' }}">
                 <span class="flex h-7 w-7 items-center justify-center rounded-lg text-emerald-100/60"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 5v2"/></svg></span>
                 Change password
@@ -299,7 +303,7 @@
                 <div><p class="text-xs font-medium text-slate-400">{{ now(config('app.business_timezone'))->format('l, F j, Y') }}</p><p class="text-sm font-semibold text-slate-700">{{ auth()->user()->business->name }}</p></div>
             </div>
             <div class="flex items-center gap-3">
-                @php($failedSyncCount = \App\Models\DesktopPosSyncLog::query()->whereIn('machine_id', auth()->user()->business->terminals()->select('machine_id'))->where('status', 'failed')->count())
+                @php($failedSyncCount = \App\Models\DesktopPosSyncLog::query()->whereIn('machine_id', auth()->user()->business->terminals()->when(! auth()->user()->isAdministrator(), fn ($query) => $query->whereIn('id', auth()->user()->assignedTerminalIds()))->select('machine_id'))->where('status', 'failed')->count())
                 <a href="{{ route('sync.index', ['status' => 'failed']) }}" class="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-[#01553d]" aria-label="{{ $failedSyncCount }} failed sync notifications" title="{{ $failedSyncCount }} failed synchronization(s)">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>
                     @if($failedSyncCount > 0)<span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>@endif

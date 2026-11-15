@@ -7,7 +7,7 @@
         <div>
             <p class="text-sm font-semibold text-[#01553d]">Account security</p>
             <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Change password</h1>
-            <p class="mt-2 text-sm text-slate-500">Choose a new password with at least 12 characters.</p>
+            <p class="mt-2 text-sm text-slate-500">Choose a new password with at least 6 characters.</p>
         </div>
 
         @include('partials.flash')
@@ -25,13 +25,13 @@
 
                 <div>
                     <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700">New password</label>
-                    <input id="password" name="password" type="password" required minlength="12" autocomplete="new-password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
+                    <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
                     @error('password')<p class="mt-1.5 text-sm text-rose-600">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
                     <label for="password_confirmation" class="mb-1.5 block text-sm font-medium text-slate-700">Confirm new password</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" required minlength="12" autocomplete="new-password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
+                    <input id="password_confirmation" name="password_confirmation" type="password" required minlength="6" autocomplete="new-password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#2b805b] focus:outline-none focus:ring-4 focus:ring-emerald-900/5">
                 </div>
 
                 <div class="flex justify-end border-t border-slate-100 pt-5">

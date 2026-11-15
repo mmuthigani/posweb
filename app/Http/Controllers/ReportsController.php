@@ -71,7 +71,7 @@ class ReportsController extends Controller
             'products' => DB::table('pos_sale_items')
                 ->join('pos_sales', 'pos_sales.id', '=', 'pos_sale_items.pos_sale_id')
                 ->where('pos_sales.business_id', Auth::user()->business_id)
-                ->when(! Auth::user()->isAdministrator(), fn ($query) => $query->where('pos_sales.terminal_id', Auth::user()->pos_terminal_id))
+                ->when(! Auth::user()->isAdministrator(), fn ($query) => $query->whereIn('pos_sales.terminal_id', Auth::user()->assignedTerminalIds()))
                 ->whereBetween('pos_sales.sold_at', $this->utcDateRange($from, $to))
                 ->selectRaw('pos_sale_items.product_name, pos_sale_items.product_id, SUM(pos_sale_items.quantity) AS units_sold, SUM(pos_sale_items.line_total) AS sales')
                 ->groupBy('pos_sale_items.product_name', 'pos_sale_items.product_id')
@@ -119,7 +119,7 @@ class ReportsController extends Controller
     {
         return PosSale::query()
             ->where('business_id', Auth::user()->business_id)
-            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->where('terminal_id', Auth::user()->pos_terminal_id))
+            ->when(! Auth::user()->isAdministrator(), fn (Builder $query) => $query->whereIn('terminal_id', Auth::user()->assignedTerminalIds()))
             ->whereBetween('sold_at', $this->utcDateRange($from, $to));
     }
 

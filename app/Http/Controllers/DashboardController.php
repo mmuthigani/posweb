@@ -15,17 +15,17 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $businessId = Auth::user()->business_id;
-        $terminalId = Auth::user()->isAdministrator() ? null : Auth::user()->pos_terminal_id;
+        $terminalIds = Auth::user()->isAdministrator() ? null : Auth::user()->assignedTerminalIds();
         $today = Carbon::now(config('app.business_timezone'))->startOfDay();
         $todayStartUtc = $today->copy()->utc();
         $todayEndUtc = $today->copy()->endOfDay()->utc();
         $sales = PosSale::query()
             ->where('business_id', $businessId)
-            ->when($terminalId, fn ($query) => $query->where('terminal_id', $terminalId));
+            ->when($terminalIds !== null, fn ($query) => $query->whereIn('terminal_id', $terminalIds));
         $todaySales = (clone $sales)->whereBetween('sold_at', [$todayStartUtc, $todayEndUtc]);
         $terminals = PosTerminal::query()
             ->where('business_id', $businessId)
-            ->when($terminalId, fn ($query) => $query->whereKey($terminalId));
+            ->when($terminalIds !== null, fn ($query) => $query->whereIn('id', $terminalIds));
         $machineIds = (clone $terminals)->pluck('machine_id');
 
         $daily = collect(range(6, 0))->map(function (int $days) use ($sales, $today): array {
@@ -49,11 +49,11 @@ class DashboardController extends Controller
         $topProducts = PosSaleItem::query()
             ->join('pos_sales', 'pos_sales.id', '=', 'pos_sale_items.pos_sale_id')
             ->where('pos_sales.business_id', $businessId)
-            ->when($terminalId, fn ($query) => $query->where('pos_sales.terminal_id', $terminalId))
+            ->when($terminalIds !== null, fn ($query) => $query->whereIn('pos_sales.terminal_id', $terminalIds))
             ->whereBetween('pos_sales.sold_at', [$todayStartUtc, $todayEndUtc])
             ->selectRaw('pos_sale_items.product_name, SUM(pos_sale_items.quantity) AS units, SUM(pos_sale_items.line_total) AS amount')
             ->groupBy('pos_sale_items.product_name')
-            ->orderByDesc('units')
+            ->orderByDesc('amount')
             ->limit(5)
             ->get();
 

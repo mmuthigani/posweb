@@ -62,7 +62,7 @@
                 <span class="ml-2 hidden text-sm font-normal text-emerald-100/70 md:inline">Here’s how your store is performing today.</span>
             </h1>
         </div>
-        <div class="flex items-center gap-2.5">
+        <div class="flex flex-wrap items-center gap-2.5">
             <div class="rounded-xl bg-white/10 px-3 py-1.5 ring-1 ring-white/15 backdrop-blur">
                 <p class="text-[10px] uppercase tracking-wider text-emerald-100/70">This month</p>
                 <p class="text-sm font-semibold leading-tight">{{ $currency }} {{ number_format((float) $monthlySales, 2) }}</p>
@@ -79,7 +79,7 @@
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     @foreach($stats as $stat)
         @if($stat['tone'] === 'featured')
-            <article class="group relative overflow-hidden rounded-2xl theme-gradient-featured p-5 text-white shadow-lg shadow-emerald-900/15 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl">
+            <article class="group relative min-w-0 overflow-hidden rounded-2xl theme-gradient-featured p-5 text-white shadow-lg shadow-emerald-900/15 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl">
                 <div class="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#79c143]/25 blur-2xl"></div>
                 <div class="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/5"></div>
 
@@ -108,7 +108,7 @@
             </article>
         @else
             @php $t = $tones[$stat['tone']]; @endphp
-            <article class="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-sm shadow-slate-900/[0.03] transition duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg hover:shadow-slate-900/5">
+            <article class="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-sm shadow-slate-900/[0.03] transition duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg hover:shadow-slate-900/5">
                 <div class="flex items-center justify-between">
                     <p class="text-sm font-medium text-slate-500">{{ $stat['label'] }}</p>
                     <span class="grid h-9 w-9 place-items-center rounded-xl ring-1 transition group-hover:scale-105 {{ $t['tile'] }}">
@@ -134,13 +134,13 @@
 
 {{-- Sales activity + payment methods --}}
 <div class="mt-4 grid gap-4 xl:grid-cols-3">
-    <section class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2">
+    <section class="min-w-0 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="font-semibold text-slate-900">Sales activity</h2>
                 <p class="mt-1 text-sm text-slate-500">Daily sales for the last seven days</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold theme-primary-text ring-1 ring-emerald-100">
+            <span class="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold theme-primary-text ring-1 ring-emerald-100">
                 <span class="h-1.5 w-1.5 rounded-full bg-[#79c143]"></span>
                 {{ $currency }} {{ number_format((float) $monthlySales, 2) }} <span class="font-normal text-emerald-800/70">this month</span>
             </span>
@@ -174,7 +174,7 @@
         </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+    <section class="min-w-0 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
         <div>
             <h2 class="font-semibold text-slate-900">Payment methods</h2>
             <p class="mt-1 text-sm text-slate-500">Today’s sales breakdown</p>
@@ -182,7 +182,7 @@
         @forelse($paymentMethods as $method)
             @php $pct = $todaySales > 0 ? min(100, (float) $method->amount / $todaySales * 100) : 0; @endphp
             <div class="mt-5">
-                <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                <div class="mb-2 flex flex-wrap items-center justify-between gap-3 text-sm">
                     <span class="flex min-w-0 items-center gap-2">
                         <span class="h-2 w-2 shrink-0 rounded-full bg-[#79c143]"></span>
                         <span class="truncate font-medium text-slate-700">{{ $method->method }}</span>
@@ -207,8 +207,8 @@
 
 {{-- Transactions + side cards --}}
 <div class="mt-4 grid gap-4 xl:grid-cols-3">
-    <section class="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm xl:col-span-2">
-        <div class="flex items-center justify-between px-5 py-5 sm:px-6">
+    <section class="min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm xl:col-span-2">
+        <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-6">
             <div>
                 <h2 class="font-semibold text-slate-900">Recent transactions</h2>
                 <p class="mt-1 text-sm text-slate-500">Latest sales synced from your terminals</p>
@@ -314,20 +314,20 @@
 
 {{-- Top products / cashiers --}}
 <div class="mt-4 grid gap-4 lg:grid-cols-2">
-    <section class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-        <div class="flex items-center justify-between">
+    <section class="min-w-0 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+        <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="font-semibold text-slate-900">Top products today</h2>
             <span class="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400">By revenue</span>
         </div>
         <div class="mt-4 space-y-1">
             @forelse($topProducts as $i => $product)
-                <div class="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-slate-50">
-                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-bold {{ $i === 0 ? 'theme-gradient-accent text-white' : 'bg-slate-100 text-slate-500' }}">{{ $i + 1 }}</span>
+                <div class="grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1 rounded-xl p-2.5 transition hover:bg-slate-50 sm:flex sm:gap-3">
+                    <span class="row-span-2 grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-bold sm:row-span-1 {{ $i === 0 ? 'theme-gradient-accent text-white' : 'bg-slate-100 text-slate-500' }}">{{ $i + 1 }}</span>
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-medium text-slate-700">{{ $product->product_name }}</p>
                         <p class="text-xs text-slate-400">{{ number_format((float) $product->units, 2) }} units</p>
                     </div>
-                    <p class="shrink-0 text-sm font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $product->amount, 2) }}</p>
+                    <p class="col-start-2 min-w-0 break-words text-sm font-semibold text-slate-900 sm:ml-auto sm:shrink-0 sm:break-normal sm:text-right">{{ $currency }} {{ number_format((float) $product->amount, 2) }}</p>
                 </div>
             @empty
                 <div class="flex flex-col items-center gap-2 py-8 text-center">
@@ -340,20 +340,20 @@
         </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-        <div class="flex items-center justify-between">
+    <section class="min-w-0 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+        <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="font-semibold text-slate-900">Top cashiers today</h2>
             <span class="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400">By revenue</span>
         </div>
         <div class="mt-4 space-y-1">
             @forelse($topCashiers as $i => $cashier)
-                <div class="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-slate-50">
-                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold {{ $i === 0 ? 'theme-gradient-accent text-white' : 'bg-emerald-50 theme-primary-text' }}">{{ strtoupper(mb_substr($cashier->cashier_name, 0, 1)) }}</span>
+                <div class="grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1 rounded-xl p-2.5 transition hover:bg-slate-50 sm:flex sm:gap-3">
+                    <span class="row-span-2 grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold sm:row-span-1 {{ $i === 0 ? 'theme-gradient-accent text-white' : 'bg-emerald-50 theme-primary-text' }}">{{ strtoupper(mb_substr($cashier->cashier_name, 0, 1)) }}</span>
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-medium text-slate-700">{{ $cashier->cashier_name }}</p>
                         <p class="text-xs text-slate-400">{{ $cashier->transactions }} transactions</p>
                     </div>
-                    <p class="shrink-0 text-sm font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $cashier->amount, 2) }}</p>
+                    <p class="col-start-2 min-w-0 break-words text-sm font-semibold text-slate-900 sm:ml-auto sm:shrink-0 sm:break-normal sm:text-right">{{ $currency }} {{ number_format((float) $cashier->amount, 2) }}</p>
                 </div>
             @empty
                 <div class="flex flex-col items-center gap-2 py-8 text-center">

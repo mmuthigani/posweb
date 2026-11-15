@@ -21,10 +21,10 @@ class CreateBusinessOwner extends Command
         $code = Str::upper(trim((string) $this->ask('Unique business code')));
         $ownerName = trim((string) $this->ask('Owner name'));
         $email = Str::lower(trim((string) $this->ask('Owner email')));
-        $password = (string) $this->secret('Owner password (minimum 12 characters)');
+        $password = (string) $this->secret('Owner password (minimum 6 characters)');
 
-        if ($name === '' || $ownerName === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 12) {
-            $this->error('Provide a business name, owner name, valid email, and a password of at least 12 characters.');
+        if ($name === '' || $ownerName === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($password) < 6) {
+            $this->error('Provide a business name, owner name, valid email, and a password of at least 6 characters.');
 
             return self::FAILURE;
         }

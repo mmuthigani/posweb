@@ -50,7 +50,11 @@ Route::middleware(['auth', EnsureActiveBusiness::class])->group(function () {
     Route::get('/account/password', [AuthController::class, 'editPassword'])->name('account.password.edit');
     Route::put('/account/password', [AuthController::class, 'changePassword'])
         ->middleware('throttle:5,1')->name('account.password.update');
+    Route::get('/account/profile', [SettingsController::class, 'profile'])->name('account.profile.edit');
+    Route::put('/account/profile', [SettingsController::class, 'updateProfile'])->name('account.profile.update');
     Route::get('/account/appearance', [SettingsController::class, 'appearance'])->name('account.appearance');
+    Route::get('/settings', [SettingsController::class, 'editBusiness'])->name('settings.edit');
+    Route::put('/settings', [SettingsController::class, 'updateBusiness'])->name('settings.update');
 
     Route::get('/sales', [PosController::class, 'sales'])->name('sales.index');
     Route::get('/sales/export', [PosController::class, 'exportSales'])->name('sales.export');
@@ -77,7 +81,5 @@ Route::middleware(['auth', EnsureActiveBusiness::class])->group(function () {
         Route::post('/users', [SettingsController::class, 'storeUser'])->name('users.store');
         Route::patch('/users/{managedUser}', [SettingsController::class, 'updateUser'])->name('users.update');
         Route::delete('/users/{managedUser}', [SettingsController::class, 'deleteUser'])->name('users.destroy');
-        Route::get('/settings', [SettingsController::class, 'editBusiness'])->name('settings.edit');
-        Route::put('/settings', [SettingsController::class, 'updateBusiness'])->name('settings.update');
     });
 });

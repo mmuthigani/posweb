@@ -422,9 +422,23 @@ class DesktopPosSyncTest extends TestCase
             ->assertDontSee('PRIVATE-RECEIPT');
     }
 
-    public function test_administrator_assigns_a_user_to_a_terminal_and_can_reset_the_password(): void
+    public function test_administrator_assigns_a_user_to_multiple_terminals_and_can_reset_the_password(): void
     {
         [$terminal] = $this->registeredTerminal();
+        $otherAssignedTerminal = PosTerminal::query()->create([
+            'business_id' => $terminal->business_id,
+            'machine_id' => 'machine-test-002',
+            'client_id' => 'client-test-002',
+            'terminal_name' => 'Second till',
+            'is_active' => true,
+        ]);
+        $unassignedTerminal = PosTerminal::query()->create([
+            'business_id' => $terminal->business_id,
+            'machine_id' => 'machine-test-003',
+            'client_id' => 'client-test-003',
+            'terminal_name' => 'Unassigned till',
+            'is_active' => true,
+        ]);
         $admin = $terminal->business->users()->create([
             'name' => 'Store Owner',
             'email' => 'owner@example.test',
@@ -435,26 +449,82 @@ class DesktopPosSyncTest extends TestCase
 
         $this->actingAs($admin)->post('/users', [
             'name' => 'New Cashier',
+            'phone' => '+254700000000',
             'email' => 'cashier@example.test',
-            'password' => 'initial-password',
-            'password_confirmation' => 'initial-password',
+            'password' => '123456',
+            'password_confirmation' => '123456',
             'role' => 'staff',
-            'pos_terminal_id' => $terminal->id,
+            'pos_terminal_ids' => [$terminal->id, $otherAssignedTerminal->id],
         ])->assertRedirect();
 
         $cashier = User::query()->where('email', 'cashier@example.test')->firstOrFail();
         $this->assertSame($terminal->id, $cashier->pos_terminal_id);
-        $this->assertTrue(Hash::check('initial-password', $cashier->password));
+        $this->assertSame('+254700000000', $cashier->phone);
+        $this->assertEqualsCanonicalizing(
+            [$terminal->id, $otherAssignedTerminal->id],
+            $cashier->assignedTerminalIds(),
+        );
+        $this->assertTrue(Hash::check('123456', $cashier->password));
 
         $this->patch('/users/'.$cashier->id, [
             'role' => 'staff',
             'is_active' => true,
-            'pos_terminal_id' => $terminal->id,
-            'password' => 'replacement-password',
-            'password_confirmation' => 'replacement-password',
+            'pos_terminal_ids' => [$terminal->id, $otherAssignedTerminal->id],
+            'password' => '654321',
+            'password_confirmation' => '654321',
         ])->assertRedirect();
 
-        $this->assertTrue(Hash::check('replacement-password', $cashier->fresh()->password));
+        $this->assertTrue(Hash::check('654321', $cashier->fresh()->password));
+
+        $this->actingAs($cashier)->get('/terminals')
+            ->assertOk()
+            ->assertSee('Test till')
+            ->assertSee('Second till')
+            ->assertDontSee('Unassigned till');
+        $this->assertNotContains($unassignedTerminal->id, $cashier->assignedTerminalIds());
+    }
+
+    public function test_staff_can_update_their_profile_and_shared_business_details(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        $staff = $terminal->business->users()->create([
+            'name' => 'Initial staff name',
+            'email' => 'staff-profile@example.test',
+            'password' => 'initial-password',
+            'role' => 'staff',
+            'pos_terminal_id' => $terminal->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($staff)->put('/account/profile', [
+            'name' => 'Updated staff name',
+            'phone' => '+254711111111',
+            'email' => 'updated-staff@example.test',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $staff->id,
+            'name' => 'Updated staff name',
+            'phone' => '+254711111111',
+            'email' => 'updated-staff@example.test',
+        ]);
+
+        $this->put('/settings', [
+            'name' => 'Staff Updated Store',
+            'email' => 'store-updated@example.test',
+            'phone' => '+254722222222',
+            'address' => 'Updated address',
+            'currency' => 'USD',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('businesses', [
+            'id' => $terminal->business_id,
+            'name' => 'Staff Updated Store',
+            'email' => 'store-updated@example.test',
+            'phone' => '+254722222222',
+            'address' => 'Updated address',
+            'currency' => 'USD',
+        ]);
     }
 
     public function test_signed_in_user_can_change_their_own_password_after_confirming_current_password(): void

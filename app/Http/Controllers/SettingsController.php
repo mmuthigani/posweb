@@ -20,6 +20,24 @@ class SettingsController extends Controller
         return view('settings.appearance');
     }
 
+    public function profile(): View
+    {
+        return view('settings.profile', ['user' => Auth::user()]);
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+        ]);
+        $user->update($validated);
+
+        return back()->with('success', 'Your profile has been updated.');
+    }
+
     public function editBusiness(): View
     {
         return view('settings.business', ['business' => Auth::user()->business]);
@@ -45,11 +63,12 @@ class SettingsController extends Controller
     {
         $users = User::query()
             ->where('business_id', Auth::user()->business_id)
-            ->with('posTerminal')
+            ->with('posTerminals')
             ->orderBy('name')
             ->paginate(15);
         $terminals = PosTerminal::query()
             ->where('business_id', Auth::user()->business_id)
+            ->where('is_active', true)
             ->orderBy('terminal_name')
             ->get();
 
@@ -58,24 +77,34 @@ class SettingsController extends Controller
 
     public function storeUser(Request $request): RedirectResponse
     {
+        if ($request->filled('pos_terminal_id') && ! $request->exists('pos_terminal_ids')) {
+            $request->merge(['pos_terminal_ids' => [$request->input('pos_terminal_id')]]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:12', 'confirmed'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
             'role' => ['required', Rule::in(['admin', 'staff'])],
-            'pos_terminal_id' => [
-                'required',
+            'pos_terminal_ids' => ['required_if:role,staff', 'array', 'min:1'],
+            'pos_terminal_ids.*' => [
                 'integer',
+                'distinct',
                 Rule::exists('pos_terminals', 'id')
                     ->where('business_id', Auth::user()->business_id)
                     ->where('is_active', true),
             ],
         ]);
-        User::query()->create([
+        $terminalIds = $validated['pos_terminal_ids'] ?? [];
+        unset($validated['pos_terminal_ids']);
+        $user = User::query()->create([
             ...$validated,
             'business_id' => Auth::user()->business_id,
+            'pos_terminal_id' => $terminalIds[0] ?? null,
             'is_active' => true,
         ]);
+        $user->posTerminals()->sync($terminalIds);
 
         return back()->with('success', 'Team member added.');
     }
@@ -85,22 +114,39 @@ class SettingsController extends Controller
         $this->authorizeUser($managedUser);
         abort_if($managedUser->role === 'owner', 403, 'Owner access cannot be changed here.');
         abort_if(Auth::user()->role !== 'owner' && $managedUser->role === 'admin', 403);
+        if ($request->filled('pos_terminal_id') && ! $request->exists('pos_terminal_ids')) {
+            $request->merge(['pos_terminal_ids' => [$request->input('pos_terminal_id')]]);
+        }
+
         $validated = $request->validate([
             'role' => ['required', Rule::in(['admin', 'staff'])],
             'is_active' => ['required', 'boolean'],
-            'pos_terminal_id' => [
-                'required',
+            'pos_terminal_ids_present' => ['sometimes', 'accepted'],
+            'pos_terminal_ids' => ['required_if:role,staff', 'array', 'min:1'],
+            'pos_terminal_ids.*' => [
                 'integer',
+                'distinct',
                 Rule::exists('pos_terminals', 'id')
                     ->where('business_id', Auth::user()->business_id)
                     ->where('is_active', true),
             ],
-            'password' => ['nullable', 'string', 'min:12', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
         ]);
+        $terminalIds = $validated['pos_terminal_ids'] ?? [];
+        $hasTerminalAssignments = $request->boolean('pos_terminal_ids_present')
+            || array_key_exists('pos_terminal_ids', $request->all());
+        unset($validated['pos_terminal_ids']);
+        unset($validated['pos_terminal_ids_present']);
         if (! filled($validated['password'] ?? null)) {
             unset($validated['password']);
         }
+        if ($hasTerminalAssignments) {
+            $validated['pos_terminal_id'] = $terminalIds[0] ?? null;
+        }
         $managedUser->update($validated);
+        if ($hasTerminalAssignments) {
+            $managedUser->posTerminals()->sync($terminalIds);
+        }
 
         if (array_key_exists('password', $validated) && config('session.driver') === 'database') {
             DB::table(config('session.table'))->where('user_id', $managedUser->id)->delete();
