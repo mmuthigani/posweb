@@ -5,29 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Kikimo Desktop POS user guide for installation, activation, sales, products, inventory, and reports." />
   <title>Kikimo Desktop POS - User Guide</title>
+  <script>
+    const colorThemes = ['green', 'blue', 'violet', 'amber', 'rose', 'teal', 'indigo', 'red', 'slate', 'cyan'];
+    const savedColorTheme = localStorage.getItem('kikimo-color-theme');
+    document.documentElement.dataset.colorTheme = colorThemes.includes(savedColorTheme) ? savedColorTheme : 'green';
+  </script>
   <style>
     :root {
-      --bg: #fff7f6;
+      --theme-primary: #01553d;
+      --theme-secondary: #79c143;
+      --theme-dark: #0a2a1d;
+      --theme-mid: #046a4c;
+      --theme-soft-50: #ecfdf5;
+      --theme-soft-100: #d1fae5;
+      --theme-soft-200: #a7f3d0;
+      --theme-secondary-light: #a6e06f;
+      --theme-secondary-lighter: #b8ed8c;
+      --bg: var(--theme-soft-50);
       --paper: #ffffff;
-      --panel: #fff1f1;
-      --primary: #7a0f1d;
-      --primary-dark: #520913;
-      --primary-soft: #f7dfe2;
-      --secondary: #c6374a;
-      --text: #241416;
-      --muted: #6a4e52;
-      --line: #f0d0d5;
+      --panel: var(--theme-soft-50);
+      --primary: var(--theme-primary);
+      --primary-dark: var(--theme-dark);
+      --primary-soft: var(--theme-soft-100);
+      --secondary: var(--theme-secondary);
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #e2e8f0;
       --gold: #f2c76d;
       --success: #196b4d;
       --warning-bg: #fff3d6;
       --warning-line: #d9a847;
-      --shadow: rgba(92, 15, 21, 0.12);
+      --shadow: rgba(15, 23, 42, 0.12);
       --radius: 18px;
       --radius-sm: 12px;
       --container: 1180px;
       color-scheme: light;
       font-family: "Segoe UI", Arial, sans-serif;
       line-height: 1.6;
+    }
+
+    html[data-color-theme="blue"] {
+      --theme-primary: #2563eb; --theme-secondary: #60a5fa; --theme-dark: #102a43; --theme-mid: #1d4f73;
+      --theme-soft-50: #eff6ff; --theme-soft-100: #dbeafe; --theme-soft-200: #bfdbfe; --theme-secondary-light: #bfdbfe; --theme-secondary-lighter: #dbeafe;
+    }
+    html[data-color-theme="violet"] {
+      --theme-primary: #7c3aed; --theme-secondary: #c4b5fd; --theme-dark: #241044; --theme-mid: #4c1d95;
+      --theme-soft-50: #f5f3ff; --theme-soft-100: #ede9fe; --theme-soft-200: #ddd6fe; --theme-secondary-light: #ddd6fe; --theme-secondary-lighter: #ede9fe;
+    }
+    html[data-color-theme="amber"] {
+      --theme-primary: #b45309; --theme-secondary: #fbbf24; --theme-dark: #3a1f0c; --theme-mid: #854d0e;
+      --theme-soft-50: #fffbeb; --theme-soft-100: #fef3c7; --theme-soft-200: #fde68a; --theme-secondary-light: #fde68a; --theme-secondary-lighter: #fef3c7;
+    }
+    html[data-color-theme="rose"] {
+      --theme-primary: #e11d48; --theme-secondary: #fb7185; --theme-dark: #4c0519; --theme-mid: #9f1239;
+      --theme-soft-50: #fff1f2; --theme-soft-100: #ffe4e6; --theme-soft-200: #fecdd3; --theme-secondary-light: #fda4af; --theme-secondary-lighter: #fecdd3;
+    }
+    html[data-color-theme="teal"] {
+      --theme-primary: #0f766e; --theme-secondary: #2dd4bf; --theme-dark: #042f2e; --theme-mid: #115e59;
+      --theme-soft-50: #f0fdfa; --theme-soft-100: #ccfbf1; --theme-soft-200: #99f6e4; --theme-secondary-light: #5eead4; --theme-secondary-lighter: #99f6e4;
+    }
+    html[data-color-theme="indigo"] {
+      --theme-primary: #4f46e5; --theme-secondary: #818cf8; --theme-dark: #1e1b4b; --theme-mid: #3730a3;
+      --theme-soft-50: #eef2ff; --theme-soft-100: #e0e7ff; --theme-soft-200: #c7d2fe; --theme-secondary-light: #a5b4fc; --theme-secondary-lighter: #c7d2fe;
+    }
+    html[data-color-theme="red"] {
+      --theme-primary: #dc2626; --theme-secondary: #f87171; --theme-dark: #450a0a; --theme-mid: #991b1b;
+      --theme-soft-50: #fef2f2; --theme-soft-100: #fee2e2; --theme-soft-200: #fecaca; --theme-secondary-light: #fca5a5; --theme-secondary-lighter: #fecaca;
+    }
+    html[data-color-theme="slate"] {
+      --theme-primary: #475569; --theme-secondary: #94a3b8; --theme-dark: #0f172a; --theme-mid: #334155;
+      --theme-soft-50: #f8fafc; --theme-soft-100: #f1f5f9; --theme-soft-200: #e2e8f0; --theme-secondary-light: #cbd5e1; --theme-secondary-lighter: #e2e8f0;
+    }
+    html[data-color-theme="cyan"] {
+      --theme-primary: #0891b2; --theme-secondary: #22d3ee; --theme-dark: #083344; --theme-mid: #0e7490;
+      --theme-soft-50: #ecfeff; --theme-soft-100: #cffafe; --theme-soft-200: #a5f3fc; --theme-secondary-light: #67e8f9; --theme-secondary-lighter: #a5f3fc;
     }
 
     * { box-sizing: border-box; }
@@ -38,7 +89,7 @@
 
     body {
       margin: 0;
-      background: linear-gradient(180deg, #fff8f8 0%, #fff4f4 100%);
+      background: linear-gradient(180deg, var(--paper) 0%, var(--bg) 100%);
       color: var(--text);
       font-size: 16px;
     }
@@ -68,7 +119,7 @@
     .skip-link:focus { top: 1rem; }
 
     .hero {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary) 55%, #bc2439 100%);
+      background: linear-gradient(135deg, var(--theme-dark), var(--theme-primary) 55%, var(--theme-mid) 100%);
       color: #fff;
       padding: clamp(2.2rem, 6vw, 5rem) 1rem;
       box-shadow: inset 0 -1px 0 rgba(255,255,255,0.08);
@@ -85,7 +136,7 @@
       text-transform: uppercase;
       letter-spacing: 0.14em;
       font-weight: 800;
-      color: #ffdfe6;
+      color: var(--theme-secondary-light);
     }
 
     h1 {
@@ -98,7 +149,7 @@
     .hero-subtitle {
       max-width: 860px;
       margin: 1rem 0 0;
-      color: #fbe5ea;
+      color: var(--theme-secondary-lighter);
       font-size: 1.08rem;
     }
 
@@ -229,8 +280,8 @@
     .faq-item {
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
-      background: #fffaf9;
-      box-shadow: 0 8px 18px rgba(116, 22, 32, 0.04);
+      background: var(--theme-soft-50);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
     }
 
     .feature-card,
@@ -242,6 +293,35 @@
     .feature-card h3,
     .stack-box h3,
     .quick-box h3 { margin-top: 0; }
+
+    .download-link {
+      display: inline-block;
+      margin-top: 0.25rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .download-link:hover {
+      background: var(--primary-dark);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .signin-box {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-sm);
+      background: var(--primary-soft);
+    }
+
+    .signin-box strong {
+      color: var(--primary-dark);
+    }
 
     .callout {
       margin: 1rem 0;
@@ -289,7 +369,7 @@
 
     code {
       border-radius: 6px;
-      background: #f7eded;
+      background: var(--theme-soft-100);
       color: var(--primary-dark);
       padding: 0.12rem 0.38rem;
       font-family: Consolas, "Courier New", monospace;
@@ -323,7 +403,7 @@
     }
 
     th {
-      background: #fff0f2;
+      background: var(--theme-soft-50);
       color: var(--primary-dark);
     }
 
@@ -469,7 +549,7 @@
           <article class="feature-card">
             <span class="tag">Step 1</span>
             <h3>Download</h3>
-            <p>Get the latest Kikimo installer from the authorized source provided by the business owner or administrator.</p>
+            <p>Get the latest Kikimo installer from the authorized source provided by the business owner or administrator. <a class="download-link" href="https://drive.google.com/file/d/1wIlJ_8vpZHWgzQ1OOrK0rqXAfzblRbQ4/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Download Here</a></p>
           </article>
           <article class="feature-card">
             <span class="tag">Step 2</span>
@@ -510,7 +590,10 @@
 
       <section id="signin">
         <h2>3. Sign in</h2>
-        <p>After activation, sign in with your assigned user account and PIN.</p>
+        <div class="signin-box">
+          <strong>Sign in to Kikimo</strong>
+          <p>After activation, use your assigned user account and PIN.</p>
+        </div>
 
         <table>
           <thead>
