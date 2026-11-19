@@ -4,6 +4,7 @@
 @php
     $currency = auth()->user()->business->currency;
     $dailyMax = max((float) $dailyMaximum, 1);
+    $chartMax = max(1, (float) $daily->max(fn ($day) => max((float) $day['total'], abs((float) ($day['profit'] ?? 0)))));
     $lastIndex = count($daily) - 1;
 
     $stats = [
@@ -138,12 +139,16 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="font-semibold text-slate-900">Sales activity</h2>
-                <p class="mt-1 text-sm text-slate-500">Daily sales for the last seven days</p>
+                <p class="mt-1 text-sm text-slate-500">Gross sales and profit for the last seven days</p>
             </div>
-            <span class="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold theme-primary-text ring-1 ring-emerald-100">
-                <span class="h-1.5 w-1.5 rounded-full bg-[#79c143]"></span>
-                {{ $currency }} {{ number_format((float) $monthlySales, 2) }} <span class="font-normal text-emerald-800/70">this month</span>
-            </span>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600"><span class="h-2.5 w-2.5 rounded-sm theme-gradient-chart"></span>Gross sales</span>
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600"><span class="h-2.5 w-2.5 rounded-sm bg-[#79c143]"></span>Profit</span>
+                <span class="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold theme-primary-text ring-1 ring-emerald-100">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#79c143]"></span>
+                    {{ $currency }} {{ number_format((float) $monthlySales, 2) }} <span class="font-normal text-emerald-800/70">this month</span>
+                </span>
+            </div>
         </div>
 
         <div class="relative mt-8">
@@ -155,14 +160,18 @@
             <div class="relative flex h-48 items-end gap-2 border-b border-slate-200 px-1 sm:gap-4">
                 @foreach($daily as $i => $day)
                     @php
-                        $isLast = $i === $lastIndex;
-                        $height = $day['total'] > 0 ? max(5, ($day['total'] / $dailyMax) * 100) : 3;
+                        $grossHeight = $day['total'] > 0 ? max(5, ($day['total'] / $chartMax) * 100) : 3;
+                        $profitHeight = $day['profit'] !== null && $day['profit'] != 0
+                            ? max(5, (abs($day['profit']) / $chartMax) * 100)
+                            : 3;
                     @endphp
-                    <div class="group relative flex h-full flex-1 flex-col items-center justify-end">
-                        <div class="pointer-events-none absolute -top-1 z-10 -translate-y-full whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
-                            {{ $currency }} {{ number_format($day['total'], 2) }}
+                    <div class="group relative flex h-full flex-1 items-end justify-center gap-1">
+                        <div class="pointer-events-none absolute -top-1 z-10 -translate-y-full whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold leading-5 text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                            <span class="block">Gross: {{ $currency }} {{ number_format($day['total'], 2) }}</span>
+                            <span class="block">Profit: {{ $day['profit'] === null ? 'Unavailable (missing buying price)' : $currency.' '.number_format($day['profit'], 2) }}</span>
                         </div>
-                        <div class="w-full max-w-12 rounded-t-xl transition-all duration-300 group-hover:opacity-90 {{ $isLast ? 'theme-gradient-chart shadow-md shadow-emerald-900/10' : 'bg-gradient-to-t from-emerald-100 to-emerald-200 theme-gradient-chart-hover' }}" style="height: {{ $height }}%"></div>
+                        <div class="w-full max-w-6 rounded-t-lg theme-gradient-chart transition-all duration-300 group-hover:opacity-80" style="height: {{ $grossHeight }}%"></div>
+                        <div class="w-full max-w-6 rounded-t-lg transition-all duration-300 group-hover:opacity-80 {{ $day['profit'] === null ? 'bg-slate-200' : ($day['profit'] < 0 ? 'bg-rose-500' : 'bg-[#79c143]') }}" style="height: {{ $profitHeight }}%"></div>
                     </div>
                 @endforeach
             </div>

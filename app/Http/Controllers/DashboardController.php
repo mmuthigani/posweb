@@ -6,6 +6,7 @@ use App\Models\DesktopPosSyncLog;
 use App\Models\PosSale;
 use App\Models\PosSaleItem;
 use App\Models\PosTerminal;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -37,7 +38,60 @@ class DashboardController extends Controller
                 'label' => $date->format('D'),
                 'date' => $date->toDateString(),
                 'total' => (float) (clone $sales)->whereBetween('sold_at', [$dateStartUtc, $dateEndUtc])->sum('total'),
+                'cost' => 0.0,
+                'has_items' => false,
+                'has_unknown_cost' => false,
             ];
+        });
+
+        $weekStartUtc = $today->copy()->subDays(6)->utc();
+        $items = PosSaleItem::query()
+            ->join('pos_sales', 'pos_sales.id', '=', 'pos_sale_items.pos_sale_id')
+            ->where('pos_sales.business_id', $businessId)
+            ->when($terminalIds !== null, fn ($query) => $query->whereIn('pos_sales.terminal_id', $terminalIds))
+            ->whereBetween('pos_sales.sold_at', [$weekStartUtc, $todayEndUtc])
+            ->get([
+                'pos_sale_items.product_id',
+                'pos_sale_items.quantity',
+                'pos_sales.sold_at',
+            ]);
+        $productsByDesktopId = Product::query()
+            ->where('business_id', $businessId)
+            ->whereIn('desktop_product_id', $items->pluck('product_id')->filter()->unique())
+            ->get(['desktop_product_id', 'payload'])
+            ->keyBy('desktop_product_id');
+        $dailyByDate = $daily->keyBy('date');
+
+        foreach ($items as $item) {
+            $date = Carbon::parse($item->sold_at, 'UTC')
+                ->setTimezone(config('app.business_timezone'))
+                ->toDateString();
+            $day = $dailyByDate->get($date);
+            if ($day === null) {
+                continue;
+            }
+
+            $day['has_items'] = true;
+            $product = $productsByDesktopId->get($item->product_id);
+            $buyingPrice = $product?->payload['buying_price'] ?? null;
+
+            if (! is_numeric($buyingPrice)) {
+                $day['has_unknown_cost'] = true;
+                $dailyByDate->put($date, $day);
+
+                continue;
+            }
+
+            $day['cost'] += (float) $item->quantity * (float) $buyingPrice;
+            $dailyByDate->put($date, $day);
+        }
+
+        $daily = $dailyByDate->values()->map(function (array $day): array {
+            $day['profit'] = $day['has_unknown_cost'] || ($day['total'] > 0 && ! $day['has_items'])
+                ? null
+                : $day['total'] - $day['cost'];
+
+            return $day;
         });
 
         $paymentMethods = (clone $todaySales)

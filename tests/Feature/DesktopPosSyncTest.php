@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\DesktopPosSyncLog;
 use App\Models\PosSale;
 use App\Models\PosTerminal;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -120,6 +121,41 @@ class DesktopPosSyncTest extends TestCase
             ->assertSee('Print receipt');
 
         $this->assertDatabaseCount('pos_sales', 1);
+    }
+
+    public function test_dashboard_chart_shows_gross_sales_and_profit_from_product_buying_price(): void
+    {
+        [$terminal] = $this->registeredTerminal();
+        Product::query()->create([
+            'business_id' => $terminal->business_id,
+            'terminal_id' => $terminal->id,
+            'desktop_product_id' => 9,
+            'name' => 'Sample Product',
+            'unit_price' => 1000,
+            'payload' => ['buying_price' => 219],
+        ]);
+
+        $payload = $this->salePayload();
+        $payload['payload']['sale']['created_at'] = now()->utc()->toIso8601String();
+        $this->withHeaders(['Idempotency-Key' => 'dashboard-profit-sale'])
+            ->postJson('/api/desktop-pos/sync', $payload)
+            ->assertCreated();
+
+        $user = $terminal->business->users()->create([
+            'name' => 'Store Owner',
+            'email' => 'dashboard-owner@example.test',
+            'password' => 'password-password',
+            'role' => 'owner',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Gross sales and profit for the last seven days')
+            ->assertSee('Gross sales')
+            ->assertSee('Profit')
+            ->assertSee('Gross: KES 880.00')
+            ->assertSee('Profit: KES 661.00');
     }
 
     public function test_registered_terminal_syncs_sale_without_bearer_token(): void
