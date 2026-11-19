@@ -159,7 +159,9 @@ class DesktopPosSyncTest extends TestCase
             ->assertSee('Profit: KES 661.00')
             ->assertSee('data-chart-bar', false)
             ->assertSee('data-chart-series="gross"', false)
-            ->assertSee('data-chart-series="profit"', false);
+            ->assertSee('data-chart-series="profit"', false)
+            ->assertSee('Payment / Total')
+            ->assertSee('data-label="Payment / Total"', false);
 
         $document = new \DOMDocument();
         $document->loadHTML($response->getContent());

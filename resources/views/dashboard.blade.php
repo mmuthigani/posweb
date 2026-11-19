@@ -230,8 +230,7 @@
                     <tr>
                         <th class="px-6 py-3 font-semibold">Receipt</th>
                         <th class="px-6 py-3 font-semibold">Cashier</th>
-                        <th class="px-6 py-3 font-semibold">Payment</th>
-                        <th class="px-6 py-3 text-right font-semibold">Total</th>
+                        <th class="px-6 py-3 font-semibold">Payment / Total</th>
                         <th class="px-6 py-3 font-semibold">Time</th>
                     </tr>
                 </thead>
@@ -259,19 +258,21 @@
                                     <span class="text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td data-label="Payment" class="px-6 py-3.5">
-                                @if($sale->payment_method)
-                                    <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $sale->payment_method }}</span>
-                                @else
-                                    <span class="text-slate-400">—</span>
-                                @endif
+                            <td data-label="Payment / Total" class="px-6 py-3.5">
+                                <span class="flex flex-col items-start gap-1">
+                                    @if($sale->payment_method)
+                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $sale->payment_method }}</span>
+                                    @else
+                                        <span class="text-slate-400">—</span>
+                                    @endif
+                                    <span class="font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $sale->total, 2) }}</span>
+                                </span>
                             </td>
-                            <td data-label="Total" class="px-6 py-3.5 text-right font-semibold text-slate-900">{{ $currency }} {{ number_format((float) $sale->total, 2) }}</td>
                             <td data-label="Time" class="px-6 py-3.5 text-slate-500">{{ $sale->sold_at?->setTimezone(config('app.business_timezone'))->format('H:i') ?: '—' }}</td>
                         </tr>
                     @empty
                         <tr class="responsive-table-empty">
-                            <td colspan="5" class="px-6 py-14 text-center">
+                            <td colspan="4" class="px-6 py-14 text-center">
                                 <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 text-slate-300">
                                     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6"/></svg>
                                 </span>
