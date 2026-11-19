@@ -165,13 +165,13 @@
                             ? max(5, (abs($day['profit']) / $chartMax) * 100)
                             : 3;
                     @endphp
-                    <div class="group relative flex h-full flex-1 items-end justify-center gap-1">
+                    <div class="group relative flex h-full flex-1 items-end justify-center" data-chart-bar>
                         <div class="pointer-events-none absolute -top-1 z-10 -translate-y-full whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold leading-5 text-white opacity-0 shadow-lg transition group-hover:opacity-100">
                             <span class="block">Gross: {{ $currency }} {{ number_format($day['total'], 2) }}</span>
                             <span class="block">Profit: {{ $day['profit'] === null ? 'Unavailable (missing buying price)' : $currency.' '.number_format($day['profit'], 2) }}</span>
                         </div>
-                        <div class="w-full max-w-6 rounded-t-lg theme-gradient-chart transition-all duration-300 group-hover:opacity-80" style="height: {{ $grossHeight }}%"></div>
-                        <div class="w-full max-w-6 rounded-t-lg transition-all duration-300 group-hover:opacity-80 {{ $day['profit'] === null ? 'bg-slate-200' : ($day['profit'] < 0 ? 'bg-rose-500' : 'bg-[#79c143]') }}" style="height: {{ $profitHeight }}%"></div>
+                        <div class="w-full max-w-6 theme-gradient-chart transition-all duration-300 group-hover:opacity-80" data-chart-series="gross" style="height: {{ $grossHeight }}%"></div>
+                        <div class="absolute bottom-0 left-1/2 w-full max-w-6 -translate-x-1/2 rounded-t-lg transition-all duration-300 group-hover:opacity-80 {{ $day['profit'] === null ? 'bg-slate-200' : ($day['profit'] < 0 ? 'bg-rose-500' : 'bg-[#79c143]') }}" data-chart-series="profit" style="height: {{ $profitHeight }}%"></div>
                     </div>
                 @endforeach
             </div>

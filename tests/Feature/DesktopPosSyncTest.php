@@ -149,13 +149,28 @@ class DesktopPosSyncTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($user)->get(route('dashboard'))
+        $response = $this->actingAs($user)->get(route('dashboard'));
+        $response
             ->assertOk()
             ->assertSee('Gross sales and profit for the last seven days')
             ->assertSee('Gross sales')
             ->assertSee('Profit')
             ->assertSee('Gross: KES 880.00')
-            ->assertSee('Profit: KES 661.00');
+            ->assertSee('Profit: KES 661.00')
+            ->assertSee('data-chart-bar', false)
+            ->assertSee('data-chart-series="gross"', false)
+            ->assertSee('data-chart-series="profit"', false);
+
+        $document = new \DOMDocument();
+        $document->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($document);
+        $bars = $xpath->query('//*[@data-chart-bar]');
+
+        $this->assertCount(7, $bars);
+        foreach ($bars as $bar) {
+            $this->assertNotNull($xpath->query('.//*[@data-chart-series="gross"]', $bar)->item(0));
+            $this->assertNotNull($xpath->query('.//*[@data-chart-series="profit"]', $bar)->item(0));
+        }
     }
 
     public function test_registered_terminal_syncs_sale_without_bearer_token(): void
